@@ -1,0 +1,196 @@
+### Resolvia API Tests  (VS Code REST Client)
+### Install extension: humao.rest-client
+### Then click "Send Request" above each block
+
+@base = http://localhost:5000/api
+@adminToken = PASTE_ADMIN_TOKEN_HERE
+@customerToken = PASTE_CUSTOMER_TOKEN_HERE
+
+# ─── Health Check ────────────────────────────────────────────
+
+### Health check
+GET {{base}}/health
+
+
+# ─── AUTH ────────────────────────────────────────────────────
+
+### Admin login
+POST {{base}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "Admin@2025",
+  "mode": "admin"
+}
+
+### Customer login
+POST {{base}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "user",
+  "password": "User@2025",
+  "mode": "customer"
+}
+
+### Register new customer
+POST {{base}}/auth/register
+Content-Type: application/json
+
+{
+  "username": "testcustomer",
+  "password": "Test@1234",
+  "full_name": "Test Customer",
+  "email": "test@customer.com"
+}
+
+### Get current user info
+GET {{base}}/auth/me
+Authorization: Bearer {{adminToken}}
+
+
+# ─── COMPLAINTS ──────────────────────────────────────────────
+
+### List all complaints (admin)
+GET {{base}}/complaints
+Authorization: Bearer {{adminToken}}
+
+### Filter by status
+GET {{base}}/complaints?status=Pending
+Authorization: Bearer {{adminToken}}
+
+### Search complaints
+GET {{base}}/complaints?search=billing
+Authorization: Bearer {{adminToken}}
+
+### Get single complaint
+GET {{base}}/complaints/RV-1001
+Authorization: Bearer {{adminToken}}
+
+### Submit new complaint (public – no auth needed)
+POST {{base}}/complaints
+Content-Type: application/json
+
+{
+  "customer_name": "Juan dela Cruz",
+  "customer_email": "juan@example.com",
+  "type": "Technical Issue",
+  "subject": "Cannot log in to my account",
+  "description": "I keep getting an error when I try to log in. This started yesterday."
+}
+
+### Update complaint status (admin)
+PUT {{base}}/complaints/RV-1001
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "status": "In Progress",
+  "resolution_notes": "Investigating the billing discrepancy."
+}
+
+### Rate a resolved complaint (customer)
+POST {{base}}/complaints/RV-1003/rate
+Authorization: Bearer {{customerToken}}
+Content-Type: application/json
+
+{
+  "rating": 5
+}
+
+### Delete complaint (admin)
+DELETE {{base}}/complaints/RV-1001
+Authorization: Bearer {{adminToken}}
+
+
+# ─── STAFF ───────────────────────────────────────────────────
+
+### List all staff
+GET {{base}}/staff
+Authorization: Bearer {{adminToken}}
+
+### Get staff workload by ID
+GET {{base}}/staff/1
+Authorization: Bearer {{adminToken}}
+
+### Add new staff member
+POST {{base}}/staff
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "staff_name": "Maria Santos",
+  "dept_name": "Finance Team",
+  "handles_type": "Billing Dispute"
+}
+
+### Update staff (deactivate)
+PUT {{base}}/staff/1
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "is_active": false
+}
+
+### Delete staff
+DELETE {{base}}/staff/5
+Authorization: Bearer {{adminToken}}
+
+
+# ─── FEEDBACK ────────────────────────────────────────────────
+
+### List all feedback (admin)
+GET {{base}}/feedback
+Authorization: Bearer {{adminToken}}
+
+### Submit feedback (customer)
+POST {{base}}/feedback
+Authorization: Bearer {{customerToken}}
+Content-Type: application/json
+
+{
+  "feedback_text": "The support team was very helpful and resolved my issue quickly!",
+  "category": "Praise",
+  "sentiment": "Positive"
+}
+
+### Staff reply to feedback
+POST {{base}}/feedback/1/reply
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "reply": "Thank you for your kind words! We're glad we could help."
+}
+
+
+# ─── REPORTS ─────────────────────────────────────────────────
+
+### Dashboard KPIs
+GET {{base}}/reports/dashboard
+Authorization: Bearer {{adminToken}}
+
+### Resolution report
+GET {{base}}/reports/resolution
+Authorization: Bearer {{adminToken}}
+
+### Satisfaction ratings
+GET {{base}}/reports/satisfaction
+Authorization: Bearer {{adminToken}}
+
+
+# ─── NOTIFICATIONS ───────────────────────────────────────────
+
+### List notifications
+GET {{base}}/notifications
+Authorization: Bearer {{adminToken}}
+
+### Mark single notification read
+POST {{base}}/notifications/1/read
+Authorization: Bearer {{adminToken}}
+
+### Mark all notifications read
+POST {{base}}/notifications/read-all
+Authorization: Bearer {{adminToken}}

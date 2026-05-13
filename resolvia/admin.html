@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Resolvia Admin — Staff Dashboard</title>
+<link rel="stylesheet" href="css/global.css">
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/dashboard.css">
+<link rel="stylesheet" href="css/submit.css">
+<link rel="stylesheet" href="css/tickets.css">
+<link rel="stylesheet" href="css/panel.css">
+<link rel="stylesheet" href="css/tracking.css">
+<link rel="stylesheet" href="css/resolve.css">
+<link rel="stylesheet" href="css/reports.css">
+<link rel="stylesheet" href="css/notifications.css">
+<link rel="stylesheet" href="css/settings.css">
+<link rel="stylesheet" href="css/darkmode.css">
+<link rel="stylesheet" href="css/auth.css">
+<style>
+[data-compact=true] td,[data-compact=true] th{padding:6px 11px}
+[data-compact=true] .nav-item{padding:5px 9px}
+[data-compact=true] .card{padding:13px}
+[data-compact=true] .ph{margin-bottom:16px}
+
+/* delete modal */
+.delete-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.28);z-index:8000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s;backdrop-filter:blur(2px)}
+.delete-modal-overlay.open{opacity:1;pointer-events:all}
+.delete-modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--r3);padding:24px;max-width:370px;width:100%;text-align:center;box-shadow:var(--sh2);transform:scale(.96);transition:transform .2s ease}
+.delete-modal-overlay.open .delete-modal{transform:scale(1)}
+.del-icon{font-size:30px;margin-bottom:10px}
+.del-title{font-family:var(--fd);font-size:16px;font-weight:700;color:var(--txt);margin-bottom:5px}
+.del-sub{font-size:13px;color:var(--txt3);margin-bottom:18px}
+.del-ref{font-family:var(--fd);font-size:14px;font-weight:700;color:var(--red);margin-bottom:5px}
+.del-btns{display:flex;gap:9px}
+.del-btns .btn{flex:1;justify-content:center}
+
+/* staff management */
+.staff-dept-block{background:var(--surface);border:1px solid var(--border);border-radius:var(--r3);overflow:hidden;box-shadow:var(--sh)}
+.staff-dept-label{padding:10px 16px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);background:var(--surface2);border-bottom:1px solid var(--border)}
+.staff-dept-members{display:flex;flex-direction:column}
+.staff-card{display:flex;align-items:center;gap:14px;padding:14px 16px;border-bottom:1px solid var(--border);transition:background .12s}
+.staff-card:last-child{border-bottom:none}
+.staff-card:hover{background:var(--surface2)}
+.staff-inactive{opacity:.5}
+.staff-actions{display:flex;gap:6px;flex-shrink:0}
+.staff-av{width:48px;height:48px;border-radius:50%;background:var(--accent-dim);border:2px solid var(--accent-glow);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--accent);flex-shrink:0;overflow:hidden;position:relative;cursor:pointer}
+.staff-av img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.staff-av-upload{position:absolute;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;border-radius:50%;opacity:0;transition:opacity .15s;font-size:16px;cursor:pointer}
+.staff-av:hover .staff-av-upload{opacity:1}
+.staff-name{font-family:var(--fd);font-size:13px;font-weight:700;color:var(--txt)}
+.staff-role{font-size:11px;color:var(--txt3);margin-top:2px}
+.staff-stats{display:flex;gap:14px;margin-top:7px}
+.staff-stat{text-align:center}
+.staff-stat-val{font-family:var(--fd);font-size:14px;font-weight:700;color:var(--txt)}
+.staff-stat-k{font-size:10px;color:var(--txt3)}
+.staff-online{width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block;margin-right:4px}
+
+[data-theme=dark] #donut circle:last-of-type{fill:var(--surface)}
+@media(max-width:900px){.staff-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.staff-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════
+     ADMIN AUTH SCREEN  (Login + Register Customer)
+════════════════════════════════════════════════════ -->
+<div class="auth-screen" id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-header">
+      <div class="auth-logo">
+        <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="32" height="32" rx="8" fill="#3758c8"/><path d="M9 8h8.5c2 0 3.5.5 4.5 1.5S23 12 23 13.5c0 1.2-.35 2.2-1.05 3-.7.8-1.7 1.3-3 1.5L23.5 24H20l-4-5.5H12V24H9V8zm3 2.5v6H17c1.1 0 2-.3 2.6-.85.6-.55.9-1.3.9-2.15 0-.9-.3-1.6-.9-2.15C19 10.8 18.1 10.5 17 10.5H12z" fill="white"/></svg>
+      </div>
+      <div class="auth-brand">Resolvia Admin</div>
+      <div class="auth-tagline">Staff & Administrator Portal</div>
+      <div class="auth-role-tabs" style="margin-top:14px">
+        <div class="auth-role-tab active">🛡️ Admin / Staff</div>
+        <div class="auth-role-tab" onclick="clearSession();window.location.href='/'">👤 Customer Portal</div>
+      </div>
+    </div>
+
+    <div class="auth-body">
+      <!-- Tab switcher -->
+      <div class="auth-tabs">
+        <div class="auth-tab active" id="a-tab-login"    onclick="switchAuthTab('login','a')">Admin Sign In</div>
+        <div class="auth-tab"        id="a-tab-register" onclick="switchAuthTab('register','a')">Add Admin Account</div>
+      </div>
+
+      <!-- ── ADMIN LOGIN PANEL ── -->
+      <div class="auth-panel active" id="a-login-panel">
+        <div class="auth-error" id="login-error"></div>
+        <div class="auth-fg">
+          <label class="auth-fl">Username</label>
+          <input id="login-user" class="auth-input" type="text" placeholder="Enter admin username" onkeydown="authEnter(event,adminLogin)">
+        </div>
+        <div class="auth-fg">
+          <label class="auth-fl">Password</label>
+          <div class="auth-input-wrap">
+            <input id="login-pw" class="auth-input" type="password" placeholder="Enter password (min 8 characters)"
+              oninput="updateStrengthUI(this.value,'apw-bar','apw-lbl','apw-hint')"
+              onkeydown="authEnter(event,adminLogin)">
+            <button class="auth-eye" id="login-eye" onclick="togglePwVisibility('login-pw','login-eye')" type="button">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <div class="pw-strength-wrap">
+            <div class="pw-strength-bar" id="apw-bar"><div class="pw-seg"></div><div class="pw-seg"></div><div class="pw-seg"></div><div class="pw-seg"></div></div>
+            <div style="display:flex;justify-content:space-between"><span class="pw-label" id="apw-lbl"></span><span class="pw-hint" id="apw-hint"></span></div>
+          </div>
+        </div>
+        <label class="auth-remember"><input type="checkbox"> Keep me signed in</label>
+        <button class="auth-btn" onclick="adminLogin()">Sign In to Admin →</button>
+      </div>
+
+      <!-- ── ADD ADMIN ACCOUNT PANEL ── -->
+      <div class="auth-panel" id="a-register-panel">
+        <div style="background:var(--blue-bg);border:1.5px solid rgba(29,78,216,.18);border-radius:var(--r2);padding:10px 14px;font-size:12px;color:var(--blue);font-weight:500;margin-bottom:14px">
+          🛡️ Create a new admin or staff account. They can sign in here at the Admin Portal.
+        </div>
+        <div class="auth-error"   id="areg-error"></div>
+        <div class="auth-success" id="areg-success"></div>
+        <div class="auth-row">
+          <div class="auth-fg">
+            <label class="auth-fl">Full Name *</label>
+            <input id="areg-name" class="auth-input" type="text" placeholder="Admin full name">
+          </div>
+          <div class="auth-fg">
+            <label class="auth-fl">Email Address *</label>
+            <input id="areg-email" class="auth-input" type="email" placeholder="admin@example.com">
+          </div>
+        </div>
+        <div class="auth-fg">
+          <label class="auth-fl">Username *</label>
+          <input id="areg-user" class="auth-input" type="text" placeholder="Choose a username (min 3 chars)">
+        </div>
+        <div class="auth-fg">
+          <label class="auth-fl">Role *</label>
+          <select id="areg-role" class="auth-input" style="padding:10px 12px;cursor:pointer">
+            <option value="Administrator">🛡️ Administrator</option>
+            <option value="Finance Specialist">💰 Finance Specialist</option>
+            <option value="Tech Support">🔧 Tech Support</option>
+            <option value="Customer Success">🤝 Customer Success</option>
+            <option value="Quality Team">⭐ Quality Team</option>
+          </select>
+        </div>
+        <div class="auth-fg">
+          <label class="auth-fl">Password *</label>
+          <div class="auth-input-wrap">
+            <input id="areg-pw" class="auth-input" type="password" placeholder="Min 8 characters"
+              oninput="updateStrengthUI(this.value,'arpw-bar','arpw-lbl','arpw-hint')">
+            <button class="auth-eye" id="areg-eye" onclick="togglePwVisibility('areg-pw','areg-eye')" type="button">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <div class="pw-strength-wrap">
+            <div class="pw-strength-bar" id="arpw-bar"><div class="pw-seg"></div><div class="pw-seg"></div><div class="pw-seg"></div><div class="pw-seg"></div></div>
+            <div style="display:flex;justify-content:space-between"><span class="pw-label" id="arpw-lbl"></span><span class="pw-hint" id="arpw-hint"></span></div>
+          </div>
+        </div>
+        <div class="auth-fg">
+          <label class="auth-fl">Confirm Password *</label>
+          <input id="areg-pw-confirm" class="auth-input" type="password" placeholder="Re-enter password" onkeydown="authEnter(event,adminRegister)">
+        </div>
+        <button class="auth-btn" onclick="adminRegister()">Create Admin Account →</button>
+      </div>
+    </div>
+
+    <div class="auth-footer">
+      Demo: <strong>admin</strong> / <strong>Admin@2025</strong> &nbsp;·&nbsp;
+      Customer? <a href="index.html">Customer Portal →</a>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     LOGOUT CONFIRM
+════════════════════════════════════════════════════ -->
+<div class="logout-modal-overlay" id="logout-overlay">
+  <div class="logout-modal">
+    <div class="logout-icon">🔒</div>
+    <div class="logout-title">Sign Out?</div>
+    <div class="logout-sub">Your admin session will end and you'll be returned to the login screen.</div>
+    <div class="logout-btns">
+      <button class="btn btn-ghost" onclick="cancelLogout()">Cancel</button>
+      <button class="btn btn-red" onclick="confirmLogout()">Sign Out</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     DELETE CONFIRM MODAL
+════════════════════════════════════════════════════ -->
+<div class="delete-modal-overlay" id="delete-overlay">
+  <div class="delete-modal">
+    <div class="del-icon">🗑️</div>
+    <div class="del-ref" id="del-ref">RV-XXXX</div>
+    <div class="del-title">Delete This Ticket?</div>
+    <div class="del-sub">This action is permanent and cannot be undone. The complaint record will be removed from the system.</div>
+    <div class="del-btns">
+      <button class="btn btn-ghost" onclick="cancelDelete()">Cancel</button>
+      <button class="btn btn-red" onclick="confirmDelete()">Delete Permanently</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════
+     ADMIN SHELL
+════════════════════════════════════════════════════ -->
+<div class="shell" id="app-shell" style="display:none">
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <a class="brand" href="admin.html">
+    <div class="brand-logo">
+      <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="32" height="32" rx="8" fill="#3758c8"/><path d="M9 8h8.5c2 0 3.5.5 4.5 1.5S23 12 23 13.5c0 1.2-.35 2.2-1.05 3-.7.8-1.7 1.3-3 1.5L23.5 24H20l-4-5.5H12V24H9V8zm3 2.5v6H17c1.1 0 2-.3 2.6-.85.6-.55.9-1.3.9-2.15 0-.9-.3-1.6-.9-2.15C19 10.8 18.1 10.5 17 10.5H12z" fill="white"/></svg>
+    </div>
+    <div>
+      <div class="brand-name">Resolvia <span style="font-size:11px;font-weight:500;color:var(--txt3)">Admin</span></div>
+      <div class="brand-tagline">Staff Management Portal</div>
+    </div>
+  </a>
+  <div class="topbar-center">
+    <div class="search-box">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      <input id="gsearch" type="text" placeholder="Search tickets, customers…" oninput="globalSearch(this.value)">
+    </div>
+  </div>
+  <div class="topbar-right">
+    <span class="admin-badge">🛡️ Admin Mode</span>
+    <div class="tb-btn" id="btn-notif" onclick="toggleNotifPanel()" title="Notifications" style="position:relative">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <span class="notif-count" id="notif-count"></span>
+    </div>
+    <div class="tb-btn" id="btn-settings" onclick="toggleSettingsPanel()" title="Settings">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </div>
+    <div class="user-chip" id="user-chip" onclick="promptLogout()" title="Click to sign out">
+      <div class="user-chip-av">AD</div>
+      <div>
+        <div class="user-chip-name" id="sidebar-username">Admin</div>
+        <div class="user-chip-role" id="sidebar-userrole">Administrator</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sidebar-brand">
+    <div class="sb-logo">
+      <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="32" height="32" rx="8" fill="#3758c8"/><path d="M9 8h8.5c2 0 3.5.5 4.5 1.5S23 12 23 13.5c0 1.2-.35 2.2-1.05 3-.7.8-1.7 1.3-3 1.5L23.5 24H20l-4-5.5H12V24H9V8zm3 2.5v6H17c1.1 0 2-.3 2.6-.85.6-.55.9-1.3.9-2.15 0-.9-.3-1.6-.9-2.15C19 10.8 18.1 10.5 17 10.5H12z" fill="white"/></svg>
+    </div>
+    <div><div class="sb-name">Resolvia</div><div class="sb-tag">Take Action. Resolve Fast.</div></div>
+  </div>
+  <span class="nav-label">Overview</span>
+  <div class="nav-item" data-nav="dashboard" onclick="nav('dashboard')"><div class="nav-icon">📊</div>Dashboard<span class="nav-badge" id="nb-dash">Live</span></div>
+  <span class="nav-label">Operations</span>
+  <div class="nav-item" data-nav="tickets" onclick="nav('tickets')"><div class="nav-icon">🎫</div>All Tickets<span class="nav-badge" id="nb-tickets">10</span></div>
+  <div class="nav-item" data-nav="resolve" onclick="nav('resolve')" style="display:none"><div class="nav-icon">✅</div>Mark Resolved<span class="nav-badge" id="nb-open">—</span></div>
+  <div class="nav-item" data-nav="mytickets-admin" onclick="nav('mytickets-admin')" style="display:none"><div class="nav-icon">🎟️</div>My Tickets</div>
+  <div class="nav-item" data-nav="track" onclick="nav('track')"><div class="nav-icon">🔍</div>Customer Tracking</div>
+  <span class="nav-label">Analytics</span>
+  <div class="nav-item" data-nav="reports" onclick="nav('reports')"><div class="nav-icon">📈</div>Basic Reports</div>
+  <div class="nav-item" data-nav="ratings" onclick="nav('ratings')"><div class="nav-icon">⭐</div>Satisfaction Ratings</div>
+  <span class="nav-label">Admin</span>
+  <div class="nav-item" data-nav="staff" onclick="nav('staff')"><div class="nav-icon">👥</div>Staff Management</div>
+  <div class="nav-item" data-nav="feedback" onclick="nav('feedback')"><div class="nav-icon">💬</div>Customer Feedback<span class="nav-badge" id="nb-feedback">New</span></div>
+  <div class="sidebar-footer">
+    <div class="nav-item" style="cursor:default">
+      <div style="width:30px;height:30px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;flex-shrink:0" id="sb-av">AD</div>
+      <div><div style="font-size:12px;font-weight:600;color:var(--txt)" id="sb-name">Admin User</div><div style="font-size:11px;color:var(--txt3)" id="sb-role">Administrator</div></div>
+    </div>
+    <div class="nav-item" onclick="clearSession();window.location.href='/'" style="color:var(--txt3);font-size:12px;margin-top:2px">
+      <div class="nav-icon" style="font-size:13px">↩</div>Customer Portal
+    </div>
+    <div class="nav-item" onclick="promptLogout()" style="color:var(--red);font-size:12px;margin-top:2px">
+      <div class="nav-icon" style="font-size:13px">🔒</div>Sign Out
+    </div>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- ── Dashboard ── -->
+  <div class="page" id="p-dashboard">
+    <div class="ph">
+      <div class="ph-left"><div class="ph-title">Dashboard</div><div class="ph-sub">Take action on every complaint — real-time admin overview</div></div>
+      <div class="ph-right">
+        <button class="btn btn-ghost btn-sm" onclick="refreshDash()">↺ Refresh</button>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="sc" onclick="nav('tickets')"><div class="sc-top"><div class="sc-icon" style="background:rgba(26,79,160,.1)">📬</div><span class="sc-trend t-up">+12%</span></div><div class="sc-val" id="s-total">0</div><div class="sc-label">Total Complaints</div></div>
+      <div class="sc" onclick="nav('tickets');setFilter('Resolved')"><div class="sc-top"><div class="sc-icon" style="background:var(--green-bg)">✅</div><span class="sc-trend t-up">+8%</span></div><div class="sc-val" id="s-res">0</div><div class="sc-label">Resolved</div></div>
+      <div class="sc" onclick="nav('tickets');setFilter('In Progress')"><div class="sc-top"><div class="sc-icon" style="background:var(--blue-bg)">🔄</div><span class="sc-trend t-fl">0%</span></div><div class="sc-val" id="s-prog">0</div><div class="sc-label">In Progress</div></div>
+      <div class="sc" onclick="nav('tickets');setFilter('Pending')"><div class="sc-top"><div class="sc-icon" style="background:var(--yellow-bg)">⏳</div><span class="sc-trend t-dn">−3%</span></div><div class="sc-val" id="s-pend">0</div><div class="sc-label">Pending</div></div>
+    </div>
+    <div class="charts">
+      <div class="card"><div class="card-hd"><div class="card-title">Complaint Volume by Status</div><select class="fs" style="width:auto;font-size:12px;padding:5px 28px 5px 10px" onchange="drawBarChart()"><option>All Time</option><option>This Month</option><option>Last 30 Days</option></select></div><div class="bar-chart" id="bar-chart"></div></div>
+      <div class="card"><div class="card-hd"><div class="card-title">Status Breakdown</div></div><div class="donut-wrap"><svg id="donut" width="110" height="110" viewBox="0 0 100 100" style="flex-shrink:0"></svg><div class="dlegend" id="dlegend"></div></div></div>
+    </div>
+    <div class="card"><div class="card-hd"><div class="card-title">Recent Activity</div><button class="btn btn-ghost btn-sm" onclick="nav('tickets')">View All →</button></div><div class="tbl-wrap"><table><thead><tr><th>Ref #</th><th>Customer</th><th>Type</th><th>Status</th><th>Assigned To</th></tr></thead><tbody id="recent-tb"></tbody></table></div></div>
+  </div>
+
+  <!-- ── All Tickets (Admin: with Delete + Inline Status) ── -->
+  <div class="page" id="p-tickets">
+    <div class="ph">
+      <div class="ph-left"><div class="ph-title">All Tickets</div><div class="ph-sub">Module 03 · Admin view — change status or delete tickets directly</div></div>
+    </div>
+    <div class="filter-bar">
+      <input id="f-search" class="fi" type="text" placeholder="Search ref, customer…" oninput="applyFilters()">
+      <select id="f-status" class="fs" onchange="applyFilters()"><option value="">All Statuses</option><option>Pending</option><option>In Progress</option><option>Resolved</option></select>
+      <select id="f-type" class="fs" onchange="applyFilters()"><option value="">All Types</option><option>Billing Dispute</option><option>Technical Issue</option><option>General Inquiry</option><option>Service Quality</option></select>
+      <select id="f-priority" class="fs" onchange="applyFilters()"><option value="">All Priorities</option><option>Urgent</option><option>High</option><option>Medium</option><option>Low</option></select>
+      <div style="margin-left:auto"><button class="btn btn-ghost btn-sm" onclick="clearFilters()">Clear</button></div>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Ref #</th><th>Date</th><th>Customer</th><th>Type</th><th>Priority</th><th>Status</th><th>Assigned To</th><th>Actions</th></tr></thead>
+        <tbody id="tkt-tbody"></tbody>
+      </table></div>
+      <div class="pag"><span id="pag-info">—</span><div class="pag-btns" id="pag-btns"></div></div>
+    </div>
+  </div>
+
+  <!-- ── Track ── -->
+  <div class="page" id="p-track">
+    <div class="ph"><div class="ph-left"><div class="ph-title">Customer Tracking</div><div class="ph-sub">Module 05 — Look up any complaint by ref, email, or name</div></div></div>
+    <div class="track-card">
+      <div class="track-icon">🔍</div>
+      <div style="font-family:var(--fd);font-size:18px;font-weight:700;margin-bottom:6px;color:var(--txt)">Find a Complaint</div>
+      <p style="font-size:13px;color:var(--txt3);margin-bottom:20px">Enter a reference number (RV-1001), email, or customer name.</p>
+      <div style="display:flex;gap:8px">
+        <input id="track-in" class="fi" type="text" placeholder="RV-1001 or email@example.com" onkeydown="if(event.key==='Enter')trackLookup()">
+        <button class="btn btn-primary" onclick="trackLookup()">Search</button>
+      </div>
+      <div class="track-results" id="track-results"></div>
+    </div>
+  </div>
+
+  <!-- ── My Admin Tickets (staff only) ── -->
+  <div class="page" id="p-mytickets-admin">
+    <div class="ph">
+      <div class="ph-left">
+        <div class="ph-title">My Tickets</div>
+        <div class="ph-sub" id="my-admin-count">Loading...</div>
+      </div>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <div style="padding:14px 16px;border-bottom:1.5px solid var(--border);font-family:var(--fd);font-size:13px;font-weight:700;background:var(--surface2)">
+        Complaints Assigned to You
+      </div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Ref #</th><th>Date</th><th>Customer</th><th>Type</th><th>Priority</th><th>Status</th></tr></thead>
+        <tbody id="my-admin-tkt-tbody"></tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <!-- ── Resolve ── -->
+  <div class="page" id="p-resolve">
+    <div class="ph"><div class="ph-left"><div class="ph-title">Mark Resolved</div><div class="ph-sub">Module 06 — Close tickets. Drive results.</div></div></div>
+    <div class="resolve-actions">
+      <button class="btn btn-green" onclick="markResolved()">✅ Mark Selected as Resolved</button>
+      <button class="btn btn-ghost btn-sm" onclick="selectAll(true)">Select All</button>
+      <button class="btn btn-ghost btn-sm" onclick="selectAll(false)">Deselect All</button>
+      <span class="rcount" id="rcount"></span>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <div class="tbl-wrap"><table>
+        <thead><tr><th style="width:40px"></th><th>Ref #</th><th>Customer</th><th>Type</th><th>Status</th><th>Assigned To</th></tr></thead>
+        <tbody id="res-tbody"></tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <!-- ── Reports ── -->
+  <div class="page" id="p-reports">
+    <div class="ph"><div class="ph-left"><div class="ph-title">Basic Reports</div><div class="ph-sub">Module 08 — Insight that drives faster resolution</div></div></div>
+    <div class="rpt-layout">
+      <div>
+        <div class="rpt-bar">
+          <select id="rpt-period" class="fs" style="width:auto;max-width:160px" onchange="renderReports()"><option>Last 30 Days</option><option>Last 90 Days</option><option>All Time</option></select>
+          <select id="rpt-type" class="fs" style="width:auto;max-width:180px" onchange="renderReports()"><option value="">All Types</option><option>Billing Dispute</option><option>Technical Issue</option><option>General Inquiry</option><option>Service Quality</option></select>
+        </div>
+        <div class="card" style="padding:0;overflow:hidden">
+          <div style="padding:14px 16px;border-bottom:1.5px solid var(--border);font-family:var(--fd);font-size:13px;font-weight:700;background:var(--surface2)">Recurring Issues &amp; Resolution Rates</div>
+          <div class="tbl-wrap"><table><thead><tr><th>Complaint Type</th><th>Total</th><th>Resolved</th><th>Pending</th><th>Resolution Rate</th></tr></thead><tbody id="rpt-tbody"></tbody></table></div>
+        </div>
+      </div>
+      <div class="card" style="position:sticky;top:80px">
+        <div class="card-title" style="margin-bottom:14px">Summary</div>
+        <div class="rpt-sum">
+          <div class="sum-row"><span class="sum-k">Total Complaints</span><span class="sum-v" id="rs-total">—</span></div>
+          <div class="div"></div>
+          <div class="sum-row"><span class="sum-k">Resolved</span><span class="sum-v" style="color:var(--green)" id="rs-res">—</span></div>
+          <div class="sum-row"><span class="sum-k">In Progress</span><span class="sum-v" style="color:var(--blue)" id="rs-prog">—</span></div>
+          <div class="sum-row"><span class="sum-k">Pending</span><span class="sum-v" style="color:var(--yellow)" id="rs-pend">—</span></div>
+          <div class="div"></div>
+          <div class="sum-row"><span class="sum-k">Resolution Rate</span><span class="sum-v" id="rs-rate">—</span></div>
+          <div class="sum-row"><span class="sum-k">Avg. Resolution</span><span class="sum-v">2.4 days</span></div>
+        </div>
+        <div style="margin-top:16px"><div style="font-size:11px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Type Breakdown</div><div id="type-bars" style="display:flex;flex-direction:column;gap:8px"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Staff Management ── -->
+  <div class="page" id="p-staff">
+    <div class="ph">
+      <div class="ph-left"><div class="ph-title">Staff Management</div><div class="ph-sub">Admin-only · Manage your resolution team · Auto-assigns to least loaded staff</div></div>
+      <div class="ph-right">
+        <button class="btn btn-ghost btn-sm" onclick="openAddAdminModal()" style="margin-right:6px">＋ Add Admin Account</button>
+        <button class="btn btn-primary btn-sm" onclick="openAddStaffModal()">＋ Add Staff</button>
+      </div>
+    </div>
+    <div id="staff-grid" style="display:flex;flex-direction:column;gap:18px;margin-bottom:22px"></div>
+    <div class="card">
+      <div class="card-hd"><div class="card-title">Assignment Load Overview</div></div>
+      <div class="tbl-wrap">
+        <table><thead><tr><th>Staff Member</th><th>Department</th><th>Open Tickets</th><th>Resolved</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="staff-table"></tbody></table>
+      </div>
+    </div>
+    <!-- Admin Accounts sub-section -->
+    <div class="card" style="margin-top:18px">
+      <div class="card-hd">
+        <div class="card-title">Admin Accounts</div>
+        <div style="font-size:12px;color:var(--txt3)">All accounts that can access the Admin Portal</div>
+      </div>
+      <div class="tbl-wrap">
+        <table><thead><tr><th>Name</th><th>Username</th><th>Email</th><th>Role</th><th>Type</th></tr></thead>
+        <tbody id="admin-accounts-table"></tbody></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Satisfaction Ratings ── -->
+  <div class="page" id="p-ratings">
+    <div class="ph">
+      <div class="ph-left"><div class="ph-title">Satisfaction Ratings</div><div class="ph-sub">Customer feedback on resolved complaints</div></div>
+    </div>
+    <div class="rpt-layout">
+      <div>
+        <div class="card" style="padding:0;overflow:hidden">
+          <div style="padding:14px 16px;border-bottom:1.5px solid var(--border);font-family:var(--fd);font-size:13px;font-weight:700;background:var(--surface2)">Rated Tickets</div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>Ref #</th><th>Customer</th><th>Type</th><th>Assigned To</th><th>Rating</th></tr></thead>
+            <tbody id="ratings-tbody"></tbody>
+          </table></div>
+        </div>
+      </div>
+      <div class="card" style="position:sticky;top:80px">
+        <div class="card-title" style="margin-bottom:4px">Average Rating</div>
+        <div id="avg-rating" style="font-size:32px;font-weight:800;color:var(--txt);margin-bottom:2px">—</div>
+        <div id="rated-count" style="font-size:12px;color:var(--txt3);margin-bottom:18px">0 ratings received</div>
+        <div class="card-title" style="margin-bottom:10px">Score Distribution</div>
+        <div id="rating-bars" style="display:flex;flex-direction:column;gap:8px"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Customer Feedback ── -->
+  <div class="page" id="p-feedback">
+    <div class="ph">
+      <div class="ph-left"><div class="ph-title">Customer Feedback</div><div class="ph-sub">AI-categorized · Delivered to staff · Reply directly to customers</div></div>
+      <div class="ph-right">
+        <span class="fb-ai-badge">✨ AI Categorized</span>
+      </div>
+    </div>
+    <!-- Filter bar -->
+    <div class="fb-filter-bar" id="fb-filter-bar">
+      <button class="fb-filter-btn active" onclick="filterFeedback('all',this)">All</button>
+      <button class="fb-filter-btn" onclick="filterFeedback('Service Quality',this)">⭐ Service Quality</button>
+      <button class="fb-filter-btn" onclick="filterFeedback('Response Time',this)">⏱ Response Time</button>
+      <button class="fb-filter-btn" onclick="filterFeedback('Staff Attitude',this)">🤝 Staff Attitude</button>
+      <button class="fb-filter-btn" onclick="filterFeedback('Resolution',this)">✅ Resolution</button>
+      <button class="fb-filter-btn" onclick="filterFeedback('General',this)">💬 General</button>
+      <button class="fb-filter-btn" onclick="filterFeedback('unread',this)" style="margin-left:auto">🔴 Unread</button>
+    </div>
+    <div id="fb-list" class="fb-list">
+      <div class="fb-empty">Loading feedback…</div>
+    </div>
+  </div>
+
+</main>
+</div><!-- /shell -->
+
+<!-- TICKET PANEL (Module 04) -->
+<div class="overlay" id="overlay" onclick="closePanel()"></div>
+<aside class="panel" id="panel">
+  <div class="pn-hd"><div class="pn-title" id="pn-ref">Ticket —</div><button class="pn-close" onclick="closePanel()">✕</button></div>
+  <div class="pn-body">
+    <div>
+      <div class="pn-sec-title">Ticket Details</div>
+      <div class="meta-grid">
+        <div><div class="meta-k">Customer</div><div class="meta-v" id="pn-cust">—</div></div>
+        <div><div class="meta-k">Email</div><div class="meta-v" id="pn-email" style="font-size:12px">—</div></div>
+        <div><div class="meta-k">Type</div><div class="meta-v" id="pn-type">—</div></div>
+        <div><div class="meta-k">Submitted</div><div class="meta-v" id="pn-date">—</div></div>
+        <div><div class="meta-k">Assigned To</div><div class="meta-v" id="pn-asgn">—</div></div>
+        <div><div class="meta-k">Status</div><div class="meta-v" id="pn-status-disp">—</div></div>
+        <div><div class="meta-k">Priority</div><div class="meta-v" id="pn-priority">—</div></div>
+      </div>
+    </div>
+    <div><div class="pn-sec-title">Description</div><div class="desc-box" id="pn-desc">—</div></div>
+    <div>
+      <div class="pn-sec-title">Module 04 · Update Status</div>
+      <div class="status-btns">
+        <button class="sbt sbt-prog" data-st="In Progress" onclick="updateStatus('In Progress')">🔄 In Progress</button>
+        <button class="sbt sbt-res" data-st="Resolved" onclick="updateStatus('Resolved')">✅ Mark Resolved</button>
+      </div>
+    </div>
+    <div>
+      <div class="pn-sec-title">Module 02 · Assignment Logs</div>
+      <div id="pn-asgn-log">
+        <div class="assign-item">Rule matched: complaint type → team assignment</div>
+        <div class="assign-item">Assignment confirmed by Resolvia auto-routing</div>
+        <div class="assign-item">Status initialized to Pending on submission</div>
+      </div>
+    </div>
+    <div>
+      <div class="pn-sec-title">Resolution Notes</div>
+      <div class="fg"><textarea id="pn-notes" class="fta" rows="3" placeholder="Enter resolution notes…"></textarea></div>
+      <button class="btn btn-primary" style="width:100%;margin-top:8px" onclick="saveNotes()">💾 Save Notes</button>
+    </div>
+    <div><div class="pn-sec-title">Audit Trail</div><div class="audit" id="pn-audit"></div></div>
+    <!-- Admin-only: Delete from panel -->
+    <div style="border-top:1.5px solid var(--border);padding-top:16px">
+      <div class="pn-sec-title" style="color:var(--red)">Danger Zone</div>
+      <button class="btn btn-red" style="width:100%" onclick="promptDelete(openRef)">🗑️ Delete This Ticket</button>
+    </div>
+  </div>
+</aside>
+
+<!-- NOTIFICATIONS PANEL -->
+<div class="notif-panel" id="notif-panel">
+  <div class="notif-hd"><div class="notif-title">Notifications</div><div class="notif-actions"><span class="notif-mark-all" onclick="markAllNotifsRead()">Mark all read</span></div></div>
+  <div class="notif-list" id="notif-list"></div>
+  <div class="notif-footer"><span class="notif-view-all" onclick="showToast('📋','View all — available in full release')">View all notifications</span></div>
+</div>
+
+<!-- SETTINGS PANEL -->
+<div class="settings-panel" id="settings-panel">
+  <div class="settings-hd"><div class="settings-title">Settings</div><div class="settings-sub">Resolvia admin preferences</div></div>
+  <div class="settings-body">
+    <div class="settings-section">Appearance</div>
+    <div class="setting-row"><div class="setting-info"><div class="setting-label">🌙 Dark Mode</div><div class="setting-desc">Switch to dark color scheme</div></div><label class="toggle"><input type="checkbox" id="toggle-dark" onchange="toggleDarkMode()"><span class="toggle-track"></span></label></div>
+    <div class="setting-row"><div class="setting-info"><div class="setting-label">📐 Compact View</div><div class="setting-desc">Reduce spacing for more data</div></div><label class="toggle"><input type="checkbox" id="toggle-compact" onchange="toggleCompactMode(this.checked)"><span class="toggle-track"></span></label></div>
+    <div class="settings-div"></div>
+    <div class="settings-section">Notifications</div>
+    <div class="setting-row"><div class="setting-info"><div class="setting-label">🔔 Push Alerts</div><div class="setting-desc">Get notified on new tickets</div></div><label class="toggle"><input type="checkbox" id="toggle-notifs" checked onchange="toggleNotifPref(this.checked)"><span class="toggle-track"></span></label></div>
+    <div class="settings-div"></div>
+    <div class="settings-section">Account</div>
+    <div class="setting-row"><div class="setting-info"><div class="setting-label">🔒 Sign Out</div><div class="setting-desc">End your admin session</div></div><button class="btn btn-red btn-sm" onclick="promptLogout()">Sign Out</button></div>
+  </div>
+  <div class="settings-footer">
+    <button class="settings-footer-btn" onclick="resetSettings()">Reset to Defaults</button>
+    <button class="settings-footer-btn" onclick="clearSession();window.location.href='/'">← Customer Portal</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"><div class="toast-ic" id="t-ic">✅</div><div class="toast-tx" id="t-tx">Done</div></div>
+
+<!-- ════ ADD STAFF MODAL ════ -->
+<div class="delete-modal-overlay" id="add-staff-overlay">
+  <div class="delete-modal" style="max-width:420px;text-align:left">
+    <div class="del-title" style="text-align:center">➕ Add Staff Member</div>
+    <div style="display:flex;flex-direction:column;gap:12px;margin-top:16px">
+      <div>
+        <label style="font-size:12px;color:var(--txt2);font-weight:600;display:block;margin-bottom:4px">Full Name</label>
+        <input id="add-staff-name" class="fi" placeholder="e.g. Juan Dela Cruz" style="width:100%;box-sizing:border-box">
+      </div>
+      <div>
+        <label style="font-size:12px;color:var(--txt2);font-weight:600;display:block;margin-bottom:4px">Department</label>
+        <select id="add-staff-dept" class="fi" style="width:100%;box-sizing:border-box">
+          <option>Finance Team</option>
+          <option>Tech Support</option>
+          <option>Customer Success</option>
+          <option>Quality Team</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:20px;justify-content:flex-end">
+      <button class="btn btn-ghost" onclick="closeAddStaffModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="confirmAddStaff()">Add Staff</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ REMOVE STAFF MODAL ════ -->
+<div class="delete-modal-overlay" id="remove-staff-overlay">
+  <div class="delete-modal">
+    <div style="font-size:28px;margin-bottom:8px">⚠️</div>
+    <div class="del-title">Remove Staff Member?</div>
+    <div class="del-sub">You are about to remove <strong id="remove-staff-name"></strong> from the team.</div>
+    <div id="remove-staff-warn" style="font-size:12px;color:var(--yellow);margin-top:8px;font-weight:600"></div>
+    <div style="display:flex;gap:8px;margin-top:20px;justify-content:center">
+      <button class="btn btn-ghost" onclick="cancelRemoveStaff()">Cancel</button>
+      <button class="btn btn-red" onclick="confirmRemoveStaff()">Remove</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ REASSIGN DEPT MODAL ════ -->
+<div class="delete-modal-overlay" id="reassign-overlay">
+  <div class="delete-modal" style="max-width:400px;text-align:left">
+    <div class="del-title" style="text-align:center">↔ Reassign Department</div>
+    <div class="del-sub" style="text-align:center">Moving <strong id="reassign-staff-name"></strong> to a new department</div>
+    <div style="margin-top:16px">
+      <label style="font-size:12px;color:var(--txt2);font-weight:600;display:block;margin-bottom:4px">New Department</label>
+      <select id="reassign-dept" class="fi" style="width:100%;box-sizing:border-box"></select>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:20px;justify-content:flex-end">
+      <button class="btn btn-ghost" onclick="closeReassignModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="confirmReassign()">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ ADD ADMIN MODAL ════ -->
+<div class="delete-modal-overlay" id="add-admin-overlay">
+  <div class="delete-modal" style="max-width:440px;text-align:left">
+    <div class="del-title" style="text-align:center">🛡️ Add Admin Account</div>
+    <div style="background:var(--blue-bg);border:1.5px solid rgba(29,78,216,.18);border-radius:var(--r2);padding:9px 13px;font-size:12px;color:var(--blue);font-weight:500;margin:12px 0">
+      New admin can sign in at the Admin Portal with these credentials.
+    </div>
+    <div id="add-admin-error" class="auth-error" style="display:none;margin-bottom:8px"></div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;gap:10px">
+        <div style="flex:1">
+          <label style="font-size:12px;color:var(--txt2);font-weight:600;display:block;margin-bottom:4px">Full Name *</label>
+          <input id="aa-name" class="fi" placeholder="e.g. Maria Santos" style="width:100%;box-sizing:border-box">
+        </div>
+        <div style="flex:1">
+          <label style="font-size:12px;color:var(--txt2);font-weight:600;display:block;margin-bottom:4px">Email *</label>
+          <input id="aa-email" class="fi" type="email" placeholder="admin@example.com" style="width:100%;box-sizing:border-box">
+        </div>
+      </div>
+      <div style="display:flex;gap:10px">
+        <div style="flex:1">
+          <label style="font-size:12px;color:var(--txt2);font-weight:600;display:block;margin-bottom:4px">Username *</label>
+          <input id="aa-user" class="fi" placeholder="min 3 characters" style="width:100%;box-sizing:border-box">
+        </div>
+        <div style="flex:1">
+          <label style="font-size:12px;color:var(--txt2);font-weight:600;display:block;margin-bottom:4px">Role *</label>
+          <select id="aa-role" class="fi" style="width:100%;box-sizing:border-box">
+            <option value="Administrator">🛡️ Administrator</option>
+            <option value="Finance Specialist">💰 Finance Specialist</option>
+            <option value="Tech Support">🔧 Tech Support</option>
+            <option value="Customer Success">🤝 Customer Success</option>
+            <option value="Quality Team">⭐ Quality Team</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label style="font-size:12px;color:var(--txt2);font-weight:600;display:block;margin-bottom:4px">Password *</label>
+        <input id="aa-pw" class="fi" type="password" placeholder="Min 8 characters, include uppercase & number" style="width:100%;box-sizing:border-box">
+      </div>
+      <div>
+        <label style="font-size:12px;color:var(--txt2);font-weight:600;display:block;margin-bottom:4px">Confirm Password *</label>
+        <input id="aa-pw2" class="fi" type="password" placeholder="Re-enter password" style="width:100%;box-sizing:border-box">
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:20px;justify-content:flex-end">
+      <button class="btn btn-ghost" onclick="closeAddAdminModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="confirmAddAdmin()">Create Admin Account</button>
+    </div>
+  </div>
+</div>
+
+<style>
+/* Feedback page styles */
+.fb-list { display:flex; flex-direction:column; gap:12px; }
+.fb-card { background:var(--surface); border:1.5px solid var(--border); border-radius:var(--r3); padding:16px; transition:.15s; }
+.fb-card:hover { border-color:var(--accent); }
+.fb-card-hd { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:10px; }
+.fb-meta { font-size:11px; color:var(--txt3); margin-top:3px; }
+.fb-text { font-size:13px; color:var(--txt2); line-height:1.6; margin-bottom:12px; padding:10px 12px; background:var(--surface2); border-radius:var(--r2); border-left:3px solid var(--accent); }
+.fb-reply-wrap { margin-top:10px; border-top:1.5px solid var(--border); padding-top:12px; }
+.fb-reply-existing { font-size:12px; color:var(--green); background:var(--green-bg); border-radius:var(--r2); padding:8px 12px; margin-bottom:8px; }
+.fb-cat-tag { display:inline-flex; align-items:center; gap:4px; font-size:11px; font-weight:700; padding:3px 9px; border-radius:20px; }
+.fb-filter-bar { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
+.fb-filter-btn { font-size:12px; padding:5px 13px; border-radius:20px; border:1.5px solid var(--border); background:var(--surface); color:var(--txt2); cursor:pointer; transition:.15s; font-weight:600; }
+.fb-filter-btn.active, .fb-filter-btn:hover { border-color:var(--accent); color:var(--accent); background:var(--blue-bg); }
+.fb-empty { text-align:center; padding:40px 20px; color:var(--txt3); font-size:13px; }
+.fb-ai-badge { font-size:10px; font-weight:700; letter-spacing:.06em; color:var(--accent); background:var(--blue-bg); border:1px solid rgba(55,88,200,.2); border-radius:20px; padding:2px 8px; display:inline-block; margin-left:6px; }
+</style>
+.staff-dept-block { background:var(--surface); border:1.5px solid var(--border); border-radius:var(--r3); overflow:hidden; }
+.staff-dept-label { padding:10px 16px; font-size:11px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--accent); background:var(--surface2); border-bottom:1.5px solid var(--border); }
+.staff-dept-members { display:flex; flex-direction:column; gap:0; }
+.staff-card { display:flex; align-items:center; gap:14px; padding:14px 16px; border-bottom:1px solid var(--border); transition:.15s; }
+.staff-card:last-child { border-bottom:none; }
+.staff-card:hover { background:var(--surface2); }
+.staff-inactive { opacity:.5; }
+.staff-actions { display:flex; gap:6px; flex-shrink:0; }
+.staff-av { width:40px; height:40px; border-radius:50%; background:linear-gradient(135deg,var(--accent),var(--accent3)); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; color:#fff; flex-shrink:0; }
+.staff-name { font-family:var(--fd); font-size:13px; font-weight:700; color:var(--txt); }
+.staff-role { font-size:11px; color:var(--txt3); margin-top:2px; }
+.staff-stats { display:flex; gap:14px; margin-top:8px; }
+.staff-stat { text-align:center; }
+.staff-stat-val { font-family:var(--fd); font-size:15px; font-weight:800; color:var(--txt); }
+.staff-stat-k { font-size:10px; color:var(--txt3); text-transform:uppercase; letter-spacing:.06em; }
+</style>
+
+<!-- ════════ SCRIPTS ════════ -->
+
+<script src="js/app.js?v=2"></script>
+<script src="js/auth.js"></script>
+<script src="js/notifications.js"></script>
+<script src="js/settings.js"></script>
+<script>
+'use strict';
+
+/* ════════════════════════════════════════════════════════════
+   ROLE HELPERS
+════════════════════════════════════════════════════════════ */
+function currentRole() { return (getSession()?.role || '').toLowerCase(); }
+function isAdminRole()  { return currentRole() === 'administrator'; }
+function currentStaffName() { return getSession()?.name || ''; }
+
+/* ════════════════════════════════════════════════════════════
+   NAV — hide/show based on role
+════════════════════════════════════════════════════════════ */
+function applyRoleNav() {
+  /* Admin only nav items */
+  ['staff', 'resolve'].forEach(id => {
+    const el = document.querySelector(`[data-nav="${id}"]`);
+    if (el) el.style.display = isAdminRole() ? '' : 'none';
+  });
+  /* My Tickets: staff only, not admin */
+  const myNav = document.querySelector('[data-nav="mytickets-admin"]');
+  if (myNav) myNav.style.display = isAdminRole() ? 'none' : '';
+  /* If admin lands on mytickets-admin, redirect to tickets */
+  if (isAdminRole()) {
+    const cur = document.querySelector('.page.active');
+    if (cur && cur.id === 'p-mytickets-admin') nav('tickets');
+  }
+}
+
+/* ════════════════════════════════════════════════════════════
+   DELETE TICKET (admin only)
+════════════════════════════════════════════════════════════ */
+let deleteRef = null;
+
+function promptDelete(ref) {
+  if (!ref || !isAdminRole()) return;
+  deleteRef = ref;
+  document.getElementById('del-ref').textContent = ref;
+  document.getElementById('delete-overlay').classList.add('open');
+  closePanel();
+}
+
+function cancelDelete() {
+  deleteRef = null;
+  document.getElementById('delete-overlay').classList.remove('open');
+}
+
+function confirmDelete() {
+  if (!deleteRef) return;
+  fetch(`${API}/complaints/${deleteRef}`, {
+    method: 'DELETE', headers: authHeaders()
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (!data.ok) { showToast('⚠️', data.message || 'Delete failed.'); return; }
+    cancelDelete();
+    loadTickets();
+    updateBadges();
+    showToast('🗑️', `Ticket ${deleteRef} deleted`);
+    deleteRef = null;
+  })
+  .catch(() => showToast('⚠️', 'Could not delete ticket.'));
+}
+
+/* ════════════════════════════════════════════════════════════
+   INLINE STATUS CHANGE (admin only, enforces transitions)
+════════════════════════════════════════════════════════════ */
+function inlineStatusChange(ref, newStatus) {
+  if (!isAdminRole()) return;
+  fetch(`${API}/complaints/${ref}`, {
+    method: 'PUT',
+    headers: authHeaders(),
+    body: JSON.stringify({ status: newStatus })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (!data.ok) {
+      showToast('⚠️', data.message || 'Update failed.');
+      loadTickets(); /* reset dropdown */
+      return;
+    }
+    showToast('✏️', `${ref} → ${newStatus}`);
+    loadTickets();
+    updateBadges();
+    refreshDash();
+  })
+  .catch(() => showToast('⚠️', 'Could not update status.'));
+}
+
+/* ════════════════════════════════════════════════════════════
+   RENDER TICKETS — role-aware
+   Admin: sees all tickets with status dropdown + delete
+   Staff: sees all tickets read-only (no dropdown, no delete)
+════════════════════════════════════════════════════════════ */
+function renderTickets() {
+  const tb = document.getElementById('tkt-tbody');
+  if (!tb) return;
+  const start = (curPage - 1) * PER;
+  const page  = filtered.slice(start, start + PER);
+
+  tb.innerHTML = page.map(t => {
+    const statusCell = isAdminRole()
+      ? `<select class="status-select" onchange="inlineStatusChange('${t.ref_number}',this.value)">
+           <option ${t.status==='Pending'?'selected':''}>Pending</option>
+           <option ${t.status==='In Progress'?'selected':''}>In Progress</option>
+           <option ${t.status==='Resolved'?'selected':''}>Resolved</option>
+         </select>`
+      : `<span class="pill ${pillCls(t.status)}">${t.status}</span>`;
+
+    const actionCell = isAdminRole()
+      ? `<button class="btn btn-ghost btn-sm" onclick="openTicket('${t.ref_number}')">Open</button>
+         <button class="btn-delete" onclick="promptDelete('${t.ref_number}')">🗑️</button>`
+      : `<button class="btn btn-ghost btn-sm" onclick="openTicket('${t.ref_number}')">View</button>`;
+
+    return `<tr>
+      <td><span class="ref-id" onclick="openTicket('${t.ref_number}')">${t.ref_number}</span></td>
+      <td>${fmtDate(t.submitted_date)}</td>
+      <td style="color:var(--txt);font-weight:500">${t.customer_name}</td>
+      <td>${t.complaint_type}</td>
+      <td><span class="pill pri-pill ${priorityCls(t.priority)}">${priorityIcon(t.priority)} ${t.priority||'Medium'}</span></td>
+      <td>${statusCell}</td>
+      <td><div class="asgn"><div class="asgn-av">${ini(t.assigned_to||'UN')}</div>${t.assigned_to||'Unassigned'}</div></td>
+      <td style="display:flex;gap:6px;align-items:center">${actionCell}</td>
+    </tr>`;
+  }).join('');
+
+  renderPag();
+}
+
+/* ════════════════════════════════════════════════════════════
+   MY TICKETS (staff only) — tickets assigned to this staff
+════════════════════════════════════════════════════════════ */
+let myAdminDB = [];
+
+function loadMyAdminTickets() {
+  const name = currentStaffName();
+  fetch(`${API}/complaints/all?limit=200`, { headers: authHeaders() })
+    .then(r => r.json())
+    .then(data => {
+      if (!data.ok) return;
+      /* Filter only tickets assigned to this staff member */
+      myAdminDB = data.data.filter(t => t.assigned_to === name);
+      renderMyAdminTickets();
+    })
+    .catch(() => showToast('⚠️', 'Could not load your tickets.'));
+}
+
+function renderMyAdminTickets() {
+  const tb = document.getElementById('my-admin-tkt-tbody');
+  if (!tb) return;
+
+  setText('my-admin-count', `${myAdminDB.length} ticket${myAdminDB.length !== 1 ? 's' : ''} assigned to you`);
+
+  if (myAdminDB.length === 0) {
+    tb.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--txt3);padding:36px">No tickets assigned to you yet.</td></tr>`;
+    return;
+  }
+
+  tb.innerHTML = myAdminDB.map(t => `
+    <tr>
+      <td><span class="ref-id" onclick="openTicket('${t.ref_number}')">${t.ref_number}</span></td>
+      <td>${fmtDate(t.submitted_date)}</td>
+      <td style="color:var(--txt);font-weight:500">${t.customer_name}</td>
+      <td>${t.complaint_type}</td>
+      <td><span class="pill pri-pill ${priorityCls(t.priority)}">${priorityIcon(t.priority)} ${t.priority||'Medium'}</span></td>
+      <td>
+        <select class="status-select" onchange="staffUpdateStatus('${t.ref_number}', this.value, this)">
+          <option ${t.status==='Pending'?'selected':''}>Pending</option>
+          <option ${t.status==='In Progress'?'selected':''}>In Progress</option>
+          <option ${t.status==='Resolved'?'selected':''}>Resolved</option>
+        </select>
+      </td>
+    </tr>`).join('');
+}
+
+function staffUpdateStatus(ref, newStatus, selectEl) {
+  /* Staff transition enforcement: Pending→In Progress→Resolved only, no going back */
+  const ticket = myAdminDB.find(t => t.ref_number === ref);
+  if (!ticket) return;
+
+  const order = ['Pending', 'In Progress', 'Resolved'];
+  const curIdx = order.indexOf(ticket.status);
+  const newIdx = order.indexOf(newStatus);
+
+  if (newIdx <= curIdx) {
+    showToast('⚠️', `Cannot move from "${ticket.status}" to "${newStatus}"`);
+    selectEl.value = ticket.status; /* reset */
+    return;
+  }
+  if (newIdx - curIdx > 1) {
+    showToast('⚠️', `Cannot skip steps. Move to "${order[curIdx + 1]}" first.`);
+    selectEl.value = ticket.status; /* reset */
+    return;
+  }
+
+  fetch(`${API}/complaints/${ref}`, {
+    method: 'PUT',
+    headers: authHeaders(),
+    body: JSON.stringify({ status: newStatus })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (!data.ok) { showToast('⚠️', data.message || 'Update failed.'); selectEl.value = ticket.status; return; }
+    showToast('✅', `${ref} → ${newStatus}`);
+    loadMyAdminTickets();
+  })
+  .catch(() => { showToast('⚠️', 'Could not update.'); selectEl.value = ticket.status; });
+}
+
+/* ════════════════════════════════════════════════════════════
+   FEEDBACK — admin sees all, staff sees only assigned to them
+════════════════════════════════════════════════════════════ */
+function loadFeedback() {
+  fetch(`${API}/feedback`, { headers: authHeaders() })
+    .then(r => r.json())
+    .then(data => {
+      if (!data.ok) return;
+      let feedbacks = data.data;
+      /* Staff only sees feedback for their assigned complaints */
+      if (!isAdminRole()) {
+        const myName = currentStaffName();
+        feedbacks = feedbacks.filter(f => f.assigned_to_staff === myName);
+      }
+      renderFeedbackList(feedbacks);
+    })
+    .catch(() => {});
+}
+
+const CATEGORY_COLORS = {
+  'Service Quality': { bg:'var(--yellow-bg)', color:'var(--yellow)', icon:'⭐' },
+  'Response Time':   { bg:'var(--blue-bg)',   color:'var(--blue)',   icon:'⏱' },
+  'Staff Attitude':  { bg:'var(--green-bg)',  color:'var(--green)',  icon:'🤝' },
+  'Resolution':      { bg:'var(--green-bg)',  color:'var(--green)',  icon:'✅' },
+  'General':         { bg:'var(--surface2)',  color:'var(--txt2)',   icon:'💬' },
+};
+
+function renderFeedbackList(feedbacks) {
+  const list = document.getElementById('fb-list');
+  if (!list) return;
+
+  if (!feedbacks || feedbacks.length === 0) {
+    list.innerHTML = `<div class="fb-empty">💬 No feedback found.</div>`;
+    return;
+  }
+
+  list.innerHTML = feedbacks.map(f => {
+    const cat = CATEGORY_COLORS[f.category_name] || CATEGORY_COLORS['General'];
+    return `
+    <div class="fb-card">
+      <div class="fb-card-hd">
+        <div>
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+            ${!f.is_read ? '<span style="width:8px;height:8px;border-radius:50%;background:var(--accent);display:inline-block"></span>' : ''}
+            <span style="font-size:13px;font-weight:700;color:var(--txt)">${f.customer_name || 'Customer'}</span>
+            <span class="fb-cat-tag" style="background:${cat.bg};color:${cat.color}">${cat.icon} ${f.category_name || 'General'}</span>
+          </div>
+          <div class="fb-meta">📅 ${f.submitted_at?.substring(0,10) || '—'} · Sentiment: ${f.sentiment_name || '—'}</div>
+        </div>
+        ${!f.is_read && isAdminRole() ? `<button class="btn btn-ghost btn-sm" onclick="markFeedbackRead(${f.feedback_id})">Mark Read</button>` : ''}
+      </div>
+      <div class="fb-text">${f.feedback_text}</div>
+      ${f.staff_reply ? `<div class="fb-reply-existing">✅ Replied: <em>"${f.staff_reply}"</em></div>` : `
+      <div style="display:flex;gap:8px;align-items:flex-end;margin-top:10px">
+        <textarea id="fb-reply-${f.feedback_id}" class="fta" rows="2"
+          placeholder="Write a reply…" style="flex:1;font-size:12px"></textarea>
+        <button class="btn btn-primary btn-sm" onclick="submitFeedbackReply(${f.feedback_id})">Send</button>
+      </div>`}
+    </div>`;
+  }).join('');
+}
+
+function markFeedbackRead(id) {
+  fetch(`${API}/feedback/${id}/reply`, {
+    method: 'POST', headers: authHeaders(),
+    body: JSON.stringify({ reply: ' ' })
+  }).then(() => loadFeedback()).catch(() => {});
+}
+
+function submitFeedbackReply(id) {
+  const ta = document.getElementById(`fb-reply-${id}`);
+  if (!ta || !ta.value.trim()) { showToast('⚠️', 'Please write a reply first'); return; }
+  fetch(`${API}/feedback/${id}/reply`, {
+    method: 'POST', headers: authHeaders(),
+    body: JSON.stringify({ reply: ta.value.trim() })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (!data.ok) { showToast('⚠️', data.message || 'Failed.'); return; }
+    showToast('✅', 'Reply sent!');
+    loadFeedback();
+  })
+  .catch(() => showToast('⚠️', 'Could not send reply.'));
+}
+
+/* ════════════════════════════════════════════════════════════
+   STAFF MANAGEMENT (admin only)
+════════════════════════════════════════════════════════════ */
+function renderAdminAccountsTable() {
+  /* Kept for compatibility — loads from API */
+}
+
+/* ════════════════════════════════════════════════════════════
+   NAV OVERRIDE
+════════════════════════════════════════════════════════════ */
+const _origNav = nav;
+nav = function(id) {
+  _origNav(id);
+  if (id === 'feedback')        loadFeedback();
+  if (id === 'mytickets-admin') loadMyAdminTickets();
+};
+
+/* ════════════════════════════════════════════════════════════
+   ROLE TOGGLE (login panel)
+════════════════════════════════════════════════════════════ */
+let currentLoginRole = 'admin';
+
+function switchLoginRole(role) {
+  currentLoginRole = role;
+  const adminBtn = document.getElementById('role-btn-admin');
+  const staffBtn = document.getElementById('role-btn-staff');
+  const label    = document.getElementById('login-role-label');
+  const btn      = document.getElementById('login-btn');
+
+  if (role === 'admin') {
+    adminBtn.style.background = 'var(--accent)'; adminBtn.style.color = '#fff';
+    staffBtn.style.background = 'transparent';   staffBtn.style.color = 'var(--txt3)';
+    if (label) label.textContent = 'Administrator Username';
+    if (btn)   btn.textContent   = 'Sign In as Administrator →';
+  } else {
+    staffBtn.style.background = 'var(--accent)'; staffBtn.style.color = '#fff';
+    adminBtn.style.background = 'transparent';   adminBtn.style.color = 'var(--txt3)';
+    if (label) label.textContent = 'Staff Username';
+    if (btn)   btn.textContent   = 'Sign In as Staff →';
+  }
+  ['login-user','login-pw'].forEach(id => { const e=document.getElementById(id); if(e) e.value=''; });
+  const errEl = document.getElementById('login-error');
+  if (errEl) errEl.textContent = '';
+}
+
+/* ════════════════════════════════════════════════════════════
+   BOOT
+════════════════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+  initSettings();
+  initNotifications();
+  initAuth('admin');
+  updateTopbarUser();
+  applyRoleNav();
+  if (isLoggedIn()) setTimeout(() => nav('dashboard'), 100);
+});
+</script>

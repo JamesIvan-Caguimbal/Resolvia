@@ -1,0 +1,43 @@
+/* Resolvia — Dark Mode */
+[data-theme="dark"] {
+  --bg:       #0d1117;
+  --surface:  #161b26;
+  --surface2: #1c2333;
+  --surface3: #202840;
+  --border:   #252f47;
+  --border2:  #2e3d60;
+
+  --accent:      #5878e8;
+  --accent2:     #6e8ef5;
+  --accent3:     #8ca8ff;
+  --accent-glow: rgba(88,120,232,.18);
+  --accent-dim:  rgba(88,120,232,.10);
+
+  --green:  #32c870; --green-bg:  rgba(50,200,112,.10);
+  --yellow: #f5b920; --yellow-bg: rgba(245,185,32,.10);
+  --blue:   #5aa0f5; --blue-bg:   rgba(90,160,245,.10);
+  --red:    #f07070; --red-bg:    rgba(240,112,112,.10);
+
+  --txt:  #dde6f5;
+  --txt2: #7d94bc;
+  --txt3: #485e80;
+
+  --sh:  0 1px 4px rgba(0,0,0,.28), 0 2px 12px rgba(0,0,0,.22);
+  --sh2: 0 4px 24px rgba(0,0,0,.48);
+}
+
+[data-theme="dark"] .topbar { background: #0d1117; border-bottom-color: #1e2840; }
+[data-theme="dark"] .sidebar { background: #161b26; border-right-color: #1e2840; }
+[data-theme="dark"] .panel { background: #161b26; }
+[data-theme="dark"] .pn-hd { background: #161b26; }
+[data-theme="dark"] th { background: #1c2333; }
+[data-theme="dark"] #donut circle:last-of-type { fill: var(--surface); }
+
+*, *::before, *::after {
+  transition: background-color .2s ease, border-color .2s ease, color .15s ease;
+}
+.page, .panel, .overlay, .toast, .notif-panel, .settings-panel { transition: none; }
+.panel { transition: transform .28s cubic-bezier(.4,0,.2,1) !important; }
+.overlay { transition: opacity .22s !important; }
+.toast { transition: transform .26s cubic-bezier(.4,0,.2,1), opacity .26s !important; }
+.notif-panel, .settings-panel { transition: transform .24s cubic-bezier(.4,0,.2,1), opacity .24s !important; }

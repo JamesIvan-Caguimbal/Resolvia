@@ -1,0 +1,42 @@
+<!-- ============================================================
+     CCRTS — Mark Resolved (Module 06)
+     File: html/resolve.html
+     Included inside: index.html > main > .page#p-resolve
+     ============================================================ -->
+<div class="page" id="p-resolve">
+
+  <div class="ph">
+    <div class="ph-left">
+      <div class="ph-title">Mark Resolved</div>
+      <div class="ph-sub">Module 06 — Select open tickets and close them</div>
+    </div>
+  </div>
+
+  <!-- Action toolbar -->
+  <div class="resolve-actions">
+    <button class="btn btn-green" onclick="markResolved()">✅ Mark Selected as Resolved</button>
+    <button class="btn btn-ghost btn-sm" onclick="selectAll(true)">Select All</button>
+    <button class="btn btn-ghost btn-sm" onclick="selectAll(false)">Deselect All</button>
+    <span class="rcount" id="rcount"></span>
+  </div>
+
+  <!-- Open tickets table -->
+  <div class="card" style="padding:0;overflow:hidden">
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:40px"></th>
+            <th>Ref #</th>
+            <th>Customer</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Assigned To</th>
+          </tr>
+        </thead>
+        <tbody id="res-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>

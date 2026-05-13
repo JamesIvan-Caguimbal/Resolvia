@@ -1,0 +1,21 @@
+/* Resolvia — Notifications */
+.notif-panel { position: fixed; top: 56px; right: 12px; width: 310px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r3); box-shadow: var(--sh2); z-index: 400; transform: translateY(-8px) scale(.97); opacity: 0; pointer-events: none; transition: transform .22s, opacity .22s; }
+.notif-panel.open { transform: translateY(0) scale(1); opacity: 1; pointer-events: all; }
+.notif-hd { display: flex; align-items: center; justify-content: space-between; padding: 12px 15px; border-bottom: 1px solid var(--border); }
+.notif-title { font-family: var(--fd); font-size: 13px; font-weight: 600; color: var(--txt); }
+.notif-actions { display: flex; gap: 10px; }
+.notif-mark-all { font-size: 11px; color: var(--accent); cursor: pointer; font-weight: 600; }
+.notif-mark-all:hover { text-decoration: underline; }
+.notif-list { max-height: 330px; overflow-y: auto; }
+.notif-item { display: flex; gap: 10px; padding: 10px 15px; border-bottom: 1px solid var(--border); transition: background .12s; cursor: default; }
+.notif-item:last-child { border-bottom: none; }
+.notif-item:hover { background: var(--surface2); }
+.notif-item.unread { background: var(--accent-dim); }
+.notif-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); margin-top: 5px; flex-shrink: 0; }
+.notif-ic { font-size: 17px; flex-shrink: 0; }
+.notif-body { flex: 1; }
+.notif-msg { font-size: 12px; color: var(--txt); line-height: 1.45; font-weight: 500; }
+.notif-time { font-size: 11px; color: var(--txt3); margin-top: 2px; }
+.notif-footer { padding: 10px 15px; border-top: 1px solid var(--border); text-align: center; }
+.notif-view-all { font-size: 12px; color: var(--accent); cursor: pointer; font-weight: 600; }
+.notif-view-all:hover { text-decoration: underline; }

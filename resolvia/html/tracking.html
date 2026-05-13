@@ -1,0 +1,35 @@
+<!-- ============================================================
+     CCRTS — Customer Tracking (Module 05)
+     File: html/tracking.html
+     Included inside: index.html > main > .page#p-track
+     ============================================================ -->
+<div class="page" id="p-track">
+
+  <div class="ph">
+    <div class="ph-left">
+      <div class="ph-title">Track Your Complaint</div>
+      <div class="ph-sub">Module 05 — Check the status of your submitted complaint</div>
+    </div>
+  </div>
+
+  <div class="track-card">
+    <div class="track-icon">🔍</div>
+    <div style="font-family:var(--fd);font-size:18px;font-weight:700;margin-bottom:6px">
+      Track Complaint Status
+    </div>
+    <p style="font-size:13px;color:var(--txt3);margin-bottom:20px">
+      Enter your reference number (e.g. RV-1001), email address, or customer name.
+    </p>
+    <div style="display:flex;gap:8px">
+      <input
+        id="track-in"
+        class="fi"
+        type="text"
+        placeholder="RV-1001 or email@example.com"
+        onkeydown="if(event.key==='Enter') trackLookup()">
+      <button class="btn btn-primary" onclick="trackLookup()">Search</button>
+    </div>
+    <div class="track-results" id="track-results"></div>
+  </div>
+
+</div>

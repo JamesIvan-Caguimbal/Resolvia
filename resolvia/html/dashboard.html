@@ -1,0 +1,102 @@
+<!-- ============================================================
+     CCRTS — Dashboard (Module 07)
+     File: html/dashboard.html
+     Included inside: index.html > main > .page#p-dashboard
+     ============================================================ -->
+<div class="page" id="p-dashboard">
+
+  <!-- Page Header -->
+  <div class="ph">
+    <div class="ph-left">
+      <div class="ph-title">Dashboard</div>
+      <div class="ph-sub">Real-time overview of all complaint activity</div>
+    </div>
+    <div class="ph-right">
+      <button class="btn btn-ghost btn-sm" onclick="refreshDash()">↺ Refresh</button>
+      <button class="btn btn-primary btn-sm" onclick="nav('submit')">＋ New Complaint</button>
+    </div>
+  </div>
+
+  <!-- Stat Cards -->
+  <div class="stats">
+    <div class="sc" onclick="nav('tickets')">
+      <div class="sc-top">
+        <div class="sc-icon" style="background:var(--red-bg)">📬</div>
+        <span class="sc-trend t-up">+12%</span>
+      </div>
+      <div class="sc-val" id="s-total">0</div>
+      <div class="sc-label">Total Complaints</div>
+    </div>
+    <div class="sc" onclick="nav('tickets');setFilter('Resolved')">
+      <div class="sc-top">
+        <div class="sc-icon" style="background:var(--green-bg)">✅</div>
+        <span class="sc-trend t-up">+8%</span>
+      </div>
+      <div class="sc-val" id="s-res">0</div>
+      <div class="sc-label">Resolved</div>
+    </div>
+    <div class="sc" onclick="nav('tickets');setFilter('In Progress')">
+      <div class="sc-top">
+        <div class="sc-icon" style="background:var(--blue-bg)">🔄</div>
+        <span class="sc-trend t-fl">0%</span>
+      </div>
+      <div class="sc-val" id="s-prog">0</div>
+      <div class="sc-label">In Progress</div>
+    </div>
+    <div class="sc" onclick="nav('tickets');setFilter('Pending')">
+      <div class="sc-top">
+        <div class="sc-icon" style="background:var(--yellow-bg)">⏳</div>
+        <span class="sc-trend t-dn">−3%</span>
+      </div>
+      <div class="sc-val" id="s-pend">0</div>
+      <div class="sc-label">Pending</div>
+    </div>
+  </div>
+
+  <!-- Charts -->
+  <div class="charts">
+    <div class="card">
+      <div class="card-hd">
+        <div class="card-title">Complaint Volume by Status</div>
+        <select class="fs" style="width:auto;font-size:12px;padding:5px 28px 5px 10px" onchange="drawBarChart()">
+          <option>All Time</option>
+          <option>This Month</option>
+          <option>Last 30 Days</option>
+        </select>
+      </div>
+      <div class="bar-chart" id="bar-chart"></div>
+    </div>
+    <div class="card">
+      <div class="card-hd">
+        <div class="card-title">Status Breakdown</div>
+      </div>
+      <div class="donut-wrap">
+        <svg id="donut" width="110" height="110" viewBox="0 0 100 100" style="flex-shrink:0"></svg>
+        <div class="dlegend" id="dlegend"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Activity Table -->
+  <div class="card">
+    <div class="card-hd">
+      <div class="card-title">Recent Activity</div>
+      <button class="btn btn-ghost btn-sm" onclick="nav('tickets')">View All →</button>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Ref #</th>
+            <th>Customer</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Assigned To</th>
+          </tr>
+        </thead>
+        <tbody id="recent-tb"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>

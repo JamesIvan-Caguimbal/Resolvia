@@ -1,0 +1,8 @@
+/* Resolvia — Tracking */
+.track-card { max-width: 520px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--r3); padding: 26px; box-shadow: var(--sh); }
+.track-icon { font-size: 30px; margin-bottom: 10px; }
+.track-results { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+.tr-item { display: flex; align-items: center; justify-content: space-between; padding: 11px 13px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--r2); cursor: pointer; transition: border-color .12s; gap: 12px; }
+.tr-item:hover { border-color: var(--accent); }
+.tr-ref { font-family: var(--fd); font-size: 13px; font-weight: 700; color: var(--accent); }
+.tr-sub { font-size: 11px; color: var(--txt3); margin-top: 2px; }

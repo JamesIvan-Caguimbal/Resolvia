@@ -1,0 +1,99 @@
+<!-- ============================================================
+     CCRTS — Basic Reports (Module 08)
+     File: html/reports.html
+     Included inside: index.html > main > .page#p-reports
+     ============================================================ -->
+<div class="page" id="p-reports">
+
+  <div class="ph">
+    <div class="ph-left">
+      <div class="ph-title">Basic Reports</div>
+      <div class="ph-sub">Module 08 — Filterable complaint activity reports</div>
+    </div>
+  </div>
+
+  <div class="rpt-layout">
+
+    <!-- ── Left: Table ── -->
+    <div>
+      <!-- Filters -->
+      <div class="rpt-bar">
+        <select id="rpt-period" class="fs" style="width:auto;max-width:160px" onchange="renderReports()">
+          <option>Last 30 Days</option>
+          <option>Last 90 Days</option>
+          <option>All Time</option>
+        </select>
+        <select id="rpt-type" class="fs" style="width:auto;max-width:180px" onchange="renderReports()">
+          <option value="">All Types</option>
+          <option>Billing Dispute</option>
+          <option>Technical Issue</option>
+          <option>General Inquiry</option>
+          <option>Service Quality</option>
+        </select>
+      </div>
+
+      <!-- Report table -->
+      <div class="card" style="padding:0;overflow:hidden">
+        <div style="padding:14px 16px;border-bottom:1px solid var(--border);font-family:var(--fd);font-size:13px;font-weight:700">
+          Recurring Issues &amp; Resolution Rates
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Complaint Type</th>
+                <th>Total</th>
+                <th>Resolved</th>
+                <th>Pending</th>
+                <th>Resolution Rate</th>
+              </tr>
+            </thead>
+            <tbody id="rpt-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Right: Summary ── -->
+    <div class="card" style="position:sticky;top:80px">
+      <div class="card-title" style="margin-bottom:14px">Summary</div>
+      <div class="rpt-sum">
+        <div class="sum-row">
+          <span class="sum-k">Total Complaints</span>
+          <span class="sum-v" id="rs-total">—</span>
+        </div>
+        <div class="div"></div>
+        <div class="sum-row">
+          <span class="sum-k">Resolved</span>
+          <span class="sum-v" style="color:var(--green)" id="rs-res">—</span>
+        </div>
+        <div class="sum-row">
+          <span class="sum-k">In Progress</span>
+          <span class="sum-v" style="color:var(--blue)" id="rs-prog">—</span>
+        </div>
+        <div class="sum-row">
+          <span class="sum-k">Pending</span>
+          <span class="sum-v" style="color:var(--yellow)" id="rs-pend">—</span>
+        </div>
+        <div class="div"></div>
+        <div class="sum-row">
+          <span class="sum-k">Resolution Rate</span>
+          <span class="sum-v" id="rs-rate">—</span>
+        </div>
+        <div class="sum-row">
+          <span class="sum-k">Avg. Resolution</span>
+          <span class="sum-v">2.4 days</span>
+        </div>
+      </div>
+
+      <!-- Type breakdown mini bars -->
+      <div style="margin-top:16px">
+        <div style="font-size:11px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">
+          Type Breakdown
+        </div>
+        <div id="type-bars" style="display:flex;flex-direction:column;gap:8px"></div>
+      </div>
+    </div>
+
+  </div><!-- /rpt-layout -->
+</div>

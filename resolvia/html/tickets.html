@@ -1,0 +1,65 @@
+<!-- ============================================================
+     CCRTS — All Tickets (Module 03)
+     File: html/tickets.html
+     Included inside: index.html > main > .page#p-tickets
+     ============================================================ -->
+<div class="page" id="p-tickets">
+
+  <div class="ph">
+    <div class="ph-left">
+      <div class="ph-title">All Tickets</div>
+      <div class="ph-sub">Module 03 · View and manage all complaint tickets</div>
+    </div>
+    <div class="ph-right">
+      <button class="btn btn-primary btn-sm" onclick="nav('submit')">＋ New Ticket</button>
+    </div>
+  </div>
+
+  <!-- Filter Bar -->
+  <div class="filter-bar">
+    <input id="f-search" class="fi" type="text"
+      placeholder="Search ref, customer…" oninput="applyFilters()">
+    <select id="f-status" class="fs" onchange="applyFilters()">
+      <option value="">All Statuses</option>
+      <option>Pending</option>
+      <option>In Progress</option>
+      <option>Resolved</option>
+    </select>
+    <select id="f-type" class="fs" onchange="applyFilters()">
+      <option value="">All Types</option>
+      <option>Billing Dispute</option>
+      <option>Technical Issue</option>
+      <option>General Inquiry</option>
+      <option>Service Quality</option>
+    </select>
+    <div style="margin-left:auto">
+      <button class="btn btn-ghost btn-sm" onclick="clearFilters()">Clear Filters</button>
+    </div>
+  </div>
+
+  <!-- Tickets Table -->
+  <div class="card" style="padding:0;overflow:hidden">
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Ref #</th>
+            <th>Date</th>
+            <th>Customer</th>
+            <th>Type</th>
+            <th>Status</th>
+            <th>Assigned To</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="tkt-tbody"></tbody>
+      </table>
+    </div>
+    <!-- Pagination -->
+    <div class="pag">
+      <span id="pag-info">—</span>
+      <div class="pag-btns" id="pag-btns"></div>
+    </div>
+  </div>
+
+</div>

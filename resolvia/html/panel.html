@@ -1,0 +1,76 @@
+<!-- ============================================================
+     CCRTS — Ticket Detail Panel (Module 04 — Update Status)
+     File: html/panel.html
+     Rendered as a fixed slide-in aside, outside .shell
+     ============================================================ -->
+
+<!-- Dark overlay -->
+<div class="overlay" id="overlay" onclick="closePanel()"></div>
+
+<!-- Slide-in panel -->
+<aside class="panel" id="panel">
+
+  <div class="pn-hd">
+    <div class="pn-title" id="pn-ref">Ticket —</div>
+    <button class="pn-close" onclick="closePanel()">✕</button>
+  </div>
+
+  <div class="pn-body">
+
+    <!-- Ticket Metadata -->
+    <div>
+      <div class="pn-sec-title">Ticket Details</div>
+      <div class="meta-grid">
+        <div><div class="meta-k">Customer</div><div class="meta-v" id="pn-cust">—</div></div>
+        <div><div class="meta-k">Email</div><div class="meta-v" id="pn-email" style="font-size:12px">—</div></div>
+        <div><div class="meta-k">Type</div><div class="meta-v" id="pn-type">—</div></div>
+        <div><div class="meta-k">Submitted</div><div class="meta-v" id="pn-date">—</div></div>
+        <div><div class="meta-k">Assigned To</div><div class="meta-v" id="pn-asgn">—</div></div>
+        <div><div class="meta-k">Current Status</div><div class="meta-v" id="pn-status-disp">—</div></div>
+      </div>
+    </div>
+
+    <!-- Description -->
+    <div>
+      <div class="pn-sec-title">Description</div>
+      <div class="desc-box" id="pn-desc">—</div>
+    </div>
+
+    <!-- Module 04 — Update Status -->
+    <div>
+      <div class="pn-sec-title">Module 04 · Update Status</div>
+      <div class="status-btns">
+        <button class="sbt sbt-prog" data-st="In Progress" onclick="updateStatus('In Progress')">🔄 In Progress</button>
+        <button class="sbt sbt-res"  data-st="Resolved"    onclick="updateStatus('Resolved')">✅ Mark Resolved</button>
+      </div>
+    </div>
+
+    <!-- Module 02 — Assignment Logs -->
+    <div>
+      <div class="pn-sec-title">Module 02 · Assignment Logs</div>
+      <div id="pn-asgn-log">
+        <div class="assign-item">Rule matched: complaint type → team assignment</div>
+        <div class="assign-item">Assignment confirmed by auto-routing system</div>
+        <div class="assign-item">Status initialized to Pending on submission</div>
+      </div>
+    </div>
+
+    <!-- Resolution Notes -->
+    <div>
+      <div class="pn-sec-title">Resolution Notes</div>
+      <div class="fg">
+        <textarea id="pn-notes" class="fta" rows="3" placeholder="Enter resolution notes…"></textarea>
+      </div>
+      <button class="btn btn-primary" style="width:100%;margin-top:8px" onclick="saveNotes()">
+        💾 Save Notes
+      </button>
+    </div>
+
+    <!-- Audit Trail -->
+    <div>
+      <div class="pn-sec-title">Audit Trail</div>
+      <div class="audit" id="pn-audit"></div>
+    </div>
+
+  </div>
+</aside>

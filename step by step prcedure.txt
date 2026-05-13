@@ -1,0 +1,59 @@
+Step 1 — Get the project files
+Get the resolvia folder from your co-developer (USB, Google Drive, zip, etc.)
+
+Step 2 — Import the database
+
+1.Open MySQL Workbench
+2.Create a connection if you don't have one
+3.Go to File → Open SQL Script
+4.Browse to resolvia_database.sql and open it
+5.Press Ctrl + Shift + Enter to run it
+Confirm with: SHOW DATABASES;
+
+Step 3 — Open VS Code
+
+1.Open VS Code
+2.File → Open Folder
+3.Select the resolvia folder
+
+Step 4 — Open terminal in VS Code
+Press Ctrl + `
+
+Step 5 — Go to backend folder
+powershellcd resolvia\backend
+
+Step 6 — Allow scripts to run
+powershellSet-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+
+Step 7 — Create virtual environment
+powershellpython -m venv venv
+
+Step 8 — Activate virtual environment
+powershell.\venv\Scripts\Activate.ps1
+
+You should see (venv) at the start of the terminal line.
+Step 9 — Install dependencies
+powershellpip install -r requirements.txt
+
+Step 10 — Hash the passwords (run only once)
+powershellpython setup_db.py
+
+Step 11 — Start the system
+powershellpython app.py
+
+You should see:
+✅  Database pool created successfully.
+🚀  Resolvia API running on http://localhost:5000
+🛡️  Admin portal running on http://localhost:5000/admin
+Step 12 — Open in browser
+
+Customer page → http://localhost:5000
+Admin page → http://localhost:5000/admin
+
+
+🔁 Every Time After (new device)
+powershellcd resolvia\backend
+.\venv\Scripts\Activate.ps1
+python app.py
+
+⚠️ Keep the terminal open the whole time you're using the system.

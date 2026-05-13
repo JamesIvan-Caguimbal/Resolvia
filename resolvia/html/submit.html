@@ -1,0 +1,110 @@
+<!-- ============================================================
+     CCRTS — Submit Complaint (Module 01 + Module 02 preview)
+     File: html/submit.html
+     Included inside: index.html > main > .page#p-submit
+     ============================================================ -->
+<div class="page" id="p-submit">
+
+  <div class="ph">
+    <div class="ph-left">
+      <div class="ph-title">Submit Complaint</div>
+      <div class="ph-sub">Module 01 — Public complaint submission form</div>
+    </div>
+  </div>
+
+  <div class="sub-layout">
+
+    <!-- ── Complaint Form Card ── -->
+    <div class="sub-card">
+
+      <!-- Form wrap (hidden on success) -->
+      <div id="sub-form-wrap">
+        <div class="sub-hd">
+          <div class="sub-title">Submit New Complaint</div>
+          <div class="sub-sub">Fill in all required fields to submit your complaint.</div>
+        </div>
+        <div class="sub-body">
+          <div class="form-row">
+            <div class="fg">
+              <label class="fl">Full Name *</label>
+              <input id="c-name" class="fi" type="text" placeholder="Your full name">
+            </div>
+            <div class="fg">
+              <label class="fl">Email Address *</label>
+              <input id="c-email" class="fi" type="email" placeholder="you@example.com">
+            </div>
+          </div>
+          <div class="fg">
+            <label class="fl">Complaint Type *</label>
+            <select id="c-type" class="fs" onchange="updateRoute()">
+              <option value="">— Select type —</option>
+              <option>Billing Dispute</option>
+              <option>Technical Issue</option>
+              <option>General Inquiry</option>
+              <option>Service Quality</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label class="fl">Subject *</label>
+            <input id="c-subj" class="fi" type="text" placeholder="Brief summary of your issue">
+          </div>
+          <div class="fg">
+            <label class="fl">Description *</label>
+            <textarea id="c-desc" class="fta" rows="5" placeholder="Describe your complaint in detail…"></textarea>
+          </div>
+        </div>
+        <div class="sub-foot">
+          <div style="font-size:12px;color:var(--txt3)">
+            Will route to: <span class="route-tag" id="route-tag">Select type first</span>
+          </div>
+          <button class="btn btn-primary" onclick="submitComplaint()">Submit Complaint →</button>
+        </div>
+      </div>
+
+      <!-- Success screen (shown after submit) -->
+      <div class="success-screen" id="sub-success">
+        <div class="suc-icon">✅</div>
+        <div class="suc-ref" id="suc-ref">RV-XXXX</div>
+        <div style="font-size:14px;font-weight:600;color:var(--txt)">Complaint Submitted!</div>
+        <div style="font-size:13px;color:var(--txt2)">
+          Assigned to <strong id="suc-assign" style="color:var(--txt)">—</strong>
+        </div>
+        <p style="font-size:12px;color:var(--txt3);max-width:280px">
+          Use your reference number to track your complaint status in Module 05.
+        </p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
+          <button class="btn btn-ghost" onclick="resetForm()">Submit Another</button>
+          <button class="btn btn-primary" onclick="nav('track')">Track Status →</button>
+        </div>
+      </div>
+
+    </div><!-- /sub-card -->
+
+    <!-- ── Sidebar Info Cards ── -->
+    <div style="display:flex;flex-direction:column;gap:14px">
+
+      <!-- Auto-assign routing rules -->
+      <div class="card">
+        <div class="card-title" style="margin-bottom:12px">Auto-Assign Routing (M02)</div>
+        <div class="route-list">
+          <div class="rl-item"><span class="rl-from">Billing Dispute</span><span class="rl-arr">→</span><span class="rl-to">Finance Team</span></div>
+          <div class="rl-item"><span class="rl-from">Technical Issue</span><span class="rl-arr">→</span><span class="rl-to">Tech Support</span></div>
+          <div class="rl-item"><span class="rl-from">General Inquiry</span><span class="rl-arr">→</span><span class="rl-to">Customer Success</span></div>
+          <div class="rl-item"><span class="rl-from">Service Quality</span><span class="rl-arr">→</span><span class="rl-to">Quality Team</span></div>
+        </div>
+      </div>
+
+      <!-- What happens next steps -->
+      <div class="card">
+        <div class="card-title" style="margin-bottom:12px">What Happens Next?</div>
+        <div class="steps">
+          <div class="step"><div class="step-n">1</div><div class="step-t">Your complaint is given a unique reference number (RV-XXXX).</div></div>
+          <div class="step"><div class="step-n">2</div><div class="step-t">Auto-assigned to the correct staff team based on complaint type.</div></div>
+          <div class="step"><div class="step-n">3</div><div class="step-t">Staff reviews, updates status, and resolves your issue with notes.</div></div>
+          <div class="step"><div class="step-n">4</div><div class="step-t">You can track progress anytime using Module 05 Customer Tracking.</div></div>
+        </div>
+      </div>
+
+    </div>
+  </div><!-- /sub-layout -->
+</div>

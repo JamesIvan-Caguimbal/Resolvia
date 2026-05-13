@@ -1,0 +1,12 @@
+/* Resolvia — Module Overview CSS */
+.mod-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px}
+.mod-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r3);overflow:hidden;cursor:pointer;transition:.22s;box-shadow:var(--sh)}
+.mod-card:hover{transform:translateY(-4px);border-color:var(--accent3);box-shadow:var(--sh2)}
+.mod-top{height:74px;display:flex;align-items:center;justify-content:center;font-size:28px;transition:.2s}
+.mod-card:hover .mod-top{transform:scale(1.08)}
+.mod-body{padding:14px}
+.mod-num{font-size:10px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px}
+.mod-name{font-family:var(--fd);font-size:13px;font-weight:700;color:var(--txt);margin-bottom:5px}
+.mod-desc{font-size:11px;color:var(--txt3);line-height:1.5}
+@media(max-width:900px){.mod-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){.mod-grid{grid-template-columns:1fr}}

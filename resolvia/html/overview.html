@@ -1,0 +1,100 @@
+<!-- ============================================================
+     CCRTS — Module Overview
+     File: html/overview.html
+     Included inside: index.html > main > .page#p-overview
+     ============================================================ -->
+<div class="page" id="p-overview">
+
+  <div class="ph">
+    <div class="ph-left">
+      <div class="ph-title">Module Overview</div>
+      <div class="ph-sub">8 modules powering the CCRTS workflow</div>
+    </div>
+  </div>
+
+  <!-- 8-Module Grid -->
+  <div class="mod-grid">
+    <div class="mod-card" onclick="nav('submit')">
+      <div class="mod-top" style="background:rgba(34,197,94,.1)">📝</div>
+      <div class="mod-body">
+        <div class="mod-num">Module 01</div>
+        <div class="mod-name">Submit Complaint</div>
+        <div class="mod-desc">Public form to submit complaints with type, description &amp; contact details.</div>
+      </div>
+    </div>
+
+    <div class="mod-card" onclick="showToast('🤖','Auto-Assign routes tickets by type to the correct team.')">
+      <div class="mod-top" style="background:rgba(59,130,246,.1)">🔀</div>
+      <div class="mod-body">
+        <div class="mod-num">Module 02</div>
+        <div class="mod-name">Auto-Assign</div>
+        <div class="mod-desc">Routing logic assigns complaints to the appropriate staff based on type.</div>
+      </div>
+    </div>
+
+    <div class="mod-card" onclick="nav('tickets')">
+      <div class="mod-top" style="background:rgba(245,158,11,.1)">🎫</div>
+      <div class="mod-body">
+        <div class="mod-num">Module 03</div>
+        <div class="mod-name">View Tickets</div>
+        <div class="mod-desc">Filterable table of all complaint tickets with sorting and search.</div>
+      </div>
+    </div>
+
+    <div class="mod-card" onclick="nav('tickets')">
+      <div class="mod-top" style="background:rgba(168,85,247,.1)">🔁</div>
+      <div class="mod-body">
+        <div class="mod-num">Module 04</div>
+        <div class="mod-name">Update Status</div>
+        <div class="mod-desc">Staff updates ticket status, adds resolution notes, and logs audit trail.</div>
+      </div>
+    </div>
+
+    <div class="mod-card" onclick="nav('track')">
+      <div class="mod-top" style="background:rgba(34,197,94,.1)">🔍</div>
+      <div class="mod-body">
+        <div class="mod-num">Module 05</div>
+        <div class="mod-name">Customer Tracking</div>
+        <div class="mod-desc">Customers look up complaint status using reference number or email.</div>
+      </div>
+    </div>
+
+    <div class="mod-card" onclick="nav('resolve')">
+      <div class="mod-top" style="background:rgba(168,85,247,.1)">✅</div>
+      <div class="mod-body">
+        <div class="mod-num">Module 06</div>
+        <div class="mod-name">Mark Resolved</div>
+        <div class="mod-desc">Bulk or individual marking of tickets as resolved with closure notes.</div>
+      </div>
+    </div>
+
+    <div class="mod-card" onclick="nav('dashboard')">
+      <div class="mod-top" style="background:rgba(239,68,68,.1)">📊</div>
+      <div class="mod-body">
+        <div class="mod-num">Module 07</div>
+        <div class="mod-name">Simple Dashboard</div>
+        <div class="mod-desc">At-a-glance stats with charts showing complaint trends and performance.</div>
+      </div>
+    </div>
+
+    <div class="mod-card" onclick="nav('reports')">
+      <div class="mod-top" style="background:rgba(239,68,68,.1)">📈</div>
+      <div class="mod-body">
+        <div class="mod-num">Module 08</div>
+        <div class="mod-name">Basic Reports</div>
+        <div class="mod-desc">Filterable reports on recurring issues, resolution rates, and staff data.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Legend -->
+  <div class="card" style="max-width:360px">
+    <div class="card-title" style="margin-bottom:12px">Status Color Legend</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <span class="pill pill-pending">Pending</span>
+      <span class="pill pill-progress">In Progress</span>
+      <span class="pill pill-resolved">Resolved</span>
+    </div>
+  </div>
+
+</div>

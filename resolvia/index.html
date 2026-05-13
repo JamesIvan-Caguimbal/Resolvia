@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Resolvia — Customer Portal</title>
+<link rel="stylesheet" href="css/global.css">
+<link rel="stylesheet" href="css/layout.css">
+<link rel="stylesheet" href="css/dashboard.css">
+<link rel="stylesheet" href="css/submit.css">
+<link rel="stylesheet" href="css/tickets.css">
+<link rel="stylesheet" href="css/panel.css">
+<link rel="stylesheet" href="css/tracking.css">
+<link rel="stylesheet" href="css/resolve.css">
+<link rel="stylesheet" href="css/reports.css">
+<link rel="stylesheet" href="css/notifications.css">
+<link rel="stylesheet" href="css/settings.css">
+<link rel="stylesheet" href="css/darkmode.css">
+<link rel="stylesheet" href="css/auth.css">
+<style>
+[data-theme=dark] #donut circle:last-of-type{fill:var(--surface)}
+[data-compact=true] td,[data-compact=true] th{padding:6px 11px}
+[data-compact=true] .nav-item{padding:5px 9px}
+[data-compact=true] .card{padding:13px}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════
+     AUTH SCREEN
+══════════════════════════════════════════════════════ -->
+<div class="auth-screen" id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-header">
+      <div class="auth-logo"><svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="32" height="32" rx="8" fill="#3758c8"/><path d="M9 8h8.5c2 0 3.5.5 4.5 1.5S23 12 23 13.5c0 1.2-.35 2.2-1.05 3-.7.8-1.7 1.3-3 1.5L23.5 24H20l-4-5.5H12V24H9V8zm3 2.5v6H17c1.1 0 2-.3 2.6-.85.6-.55.9-1.3.9-2.15 0-.9-.3-1.6-.9-2.15C19 10.8 18.1 10.5 17 10.5H12z" fill="white"/></svg></div>
+      <div class="auth-brand">Resolvia</div>
+      <div class="auth-tagline">Customer Portal · Sign in or create an account</div>
+    </div>
+
+    <div class="auth-body">
+      <!-- ── SIGN IN PANEL ── -->
+      <div id="u-login-panel">
+        <div class="auth-tab-label">Sign In</div>
+        <div class="auth-error" id="ulogin-error"></div>
+        <div class="auth-fg">
+          <label class="auth-fl">Username</label>
+          <input id="ulogin-user" class="auth-input" type="text" placeholder="Enter your username" onkeydown="authEnter(event,userLogin)">
+        </div>
+        <div class="auth-fg">
+          <label class="auth-fl">Password</label>
+          <div class="auth-input-wrap">
+            <input id="ulogin-pw" class="auth-input" type="password" placeholder="Enter your password"
+              onkeydown="authEnter(event,userLogin)">
+            <button class="auth-eye" id="ulogin-eye" onclick="togglePwVisibility('ulogin-pw','ulogin-eye')" type="button">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <div class="auth-pw-casehint">Password is case-sensitive</div>
+        </div>
+        <label class="auth-remember"><input type="checkbox"> Remember me</label>
+        <button class="auth-btn" onclick="userLogin()">Sign In →</button>
+        <div class="auth-divider">or</div>
+        <button class="auth-btn" style="background:var(--surface2);color:var(--txt);box-shadow:none;border:1.5px solid var(--border)" onclick="showRegisterView()">Create an Account</button>
+      </div>
+
+      <!-- ── REGISTER PANEL ── -->
+      <div id="u-register-panel" style="display:none">
+        <button class="auth-back-btn" onclick="showLoginView()">← Back to Sign In</button>
+        <div class="auth-tab-label" style="margin-bottom:18px">Create your account</div>
+        <div class="auth-error"   id="ureg-error"></div>
+        <div class="auth-success" id="ureg-success"></div>
+        <div class="auth-row">
+          <div class="auth-fg">
+            <label class="auth-fl">Full Name *</label>
+            <input id="ureg-name" class="auth-input" type="text" placeholder="Your full name">
+          </div>
+          <div class="auth-fg">
+            <label class="auth-fl">Email Address *</label>
+            <input id="ureg-email" class="auth-input" type="email" placeholder="you@example.com">
+          </div>
+        </div>
+        <div class="auth-fg">
+          <label class="auth-fl">Username *</label>
+          <input id="ureg-user" class="auth-input" type="text" placeholder="Choose a username (min 3 chars)" onkeydown="authEnter(event,userRegister)">
+        </div>
+        <div class="auth-fg">
+          <label class="auth-fl">Password *</label>
+          <div class="auth-input-wrap">
+            <input id="ureg-pw" class="auth-input" type="password" placeholder="Min 8 characters"
+              oninput="updateStrengthUI(this.value,'urpw-bar','urpw-lbl','urpw-hint')">
+            <button class="auth-eye" id="ureg-eye" onclick="togglePwVisibility('ureg-pw','ureg-eye')" type="button">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+          <div class="pw-strength-wrap">
+            <div class="pw-strength-bar" id="urpw-bar"><div class="pw-seg"></div><div class="pw-seg"></div><div class="pw-seg"></div><div class="pw-seg"></div></div>
+            <div style="display:flex;justify-content:space-between"><span class="pw-label" id="urpw-lbl"></span><span class="pw-hint" id="urpw-hint"></span></div>
+          </div>
+        </div>
+        <div class="auth-fg">
+          <label class="auth-fl">Confirm Password *</label>
+          <input id="ureg-pw-confirm" class="auth-input" type="password" placeholder="Re-enter your password" onkeydown="authEnter(event,userRegister)">
+        </div>
+        <button class="auth-btn" onclick="userRegister()">Create Account →</button>
+      </div>
+    </div>
+
+    <div class="auth-footer">Demo login: <strong>user</strong> / <strong>User@2025</strong></div>
+  </div>
+</div>
+
+<!-- LOGOUT MODAL -->
+<div class="logout-modal-overlay" id="logout-overlay">
+  <div class="logout-modal">
+    <div class="logout-icon">🔒</div>
+    <div class="logout-title">Sign Out?</div>
+    <div class="logout-sub">Your session will end and you'll return to the login screen.</div>
+    <div class="logout-btns">
+      <button class="btn btn-ghost" onclick="cancelLogout()">Cancel</button>
+      <button class="btn btn-red" onclick="confirmLogout()">Sign Out</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     APP SHELL  (same grid structure as admin)
+══════════════════════════════════════════════════════ -->
+<div class="shell" id="app-shell" style="display:none">
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <a class="brand" href="#" onclick="nav('dashboard');return false">
+    <div class="brand-logo"><svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="32" height="32" rx="8" fill="#3758c8"/><path d="M9 8h8.5c2 0 3.5.5 4.5 1.5S23 12 23 13.5c0 1.2-.35 2.2-1.05 3-.7.8-1.7 1.3-3 1.5L23.5 24H20l-4-5.5H12V24H9V8zm3 2.5v6H17c1.1 0 2-.3 2.6-.85.6-.55.9-1.3.9-2.15 0-.9-.3-1.6-.9-2.15C19 10.8 18.1 10.5 17 10.5H12z" fill="white"/></svg></div>
+    <div><div class="brand-name">Resolvia</div><div class="brand-tagline">Customer Portal</div></div>
+  </a>
+  <div class="topbar-center">
+    <div class="search-box">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      <input id="gsearch" type="text" placeholder="Search tickets, customers…" oninput="globalSearch(this.value)">
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div class="tb-btn" id="btn-notif" onclick="toggleNotifPanel()" title="Notifications" style="position:relative">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <span class="notif-count" id="notif-count"></span>
+    </div>
+    <div class="tb-btn" id="btn-settings" onclick="toggleSettingsPanel()" title="Settings">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </div>
+    <div class="user-chip" id="user-chip" onclick="promptLogout()" title="Click to sign out">
+      <div class="user-chip-av">U</div>
+      <div><div class="user-chip-name">Customer</div><div class="user-chip-role">Customer</div></div>
+    </div>
+  </div>
+</header>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sidebar-brand">
+    <div class="sb-logo"><svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="32" height="32" rx="8" fill="#3758c8"/><path d="M9 8h8.5c2 0 3.5.5 4.5 1.5S23 12 23 13.5c0 1.2-.35 2.2-1.05 3-.7.8-1.7 1.3-3 1.5L23.5 24H20l-4-5.5H12V24H9V8zm3 2.5v6H17c1.1 0 2-.3 2.6-.85.6-.55.9-1.3.9-2.15 0-.9-.3-1.6-.9-2.15C19 10.8 18.1 10.5 17 10.5H12z" fill="white"/></svg></div>
+    <div><div class="sb-name">Resolvia</div><div class="sb-tag">Resolve Every Complaint.</div></div>
+  </div>
+
+  <span class="nav-label">Overview</span>
+  <div class="nav-item" data-nav="dashboard" onclick="nav('dashboard')"><div class="nav-icon">📊</div>Dashboard<span class="nav-badge" id="nb-dash">Live</span></div>
+
+  <span class="nav-label">My Complaints</span>
+  <div class="nav-item" data-nav="submit"  onclick="nav('submit')"><div class="nav-icon">📝</div>Submit Complaint</div>
+  <div class="nav-item" data-nav="tickets" onclick="nav('tickets')"><div class="nav-icon">🎫</div>All Tickets<span class="nav-badge" id="nb-tickets">—</span></div>
+  <div class="nav-item" data-nav="mytickets" onclick="nav('mytickets')"><div class="nav-icon">🎟️</div>My Tickets<span class="nav-badge" id="nb-mytickets">—</span></div>
+
+  <span class="nav-label">Analytics</span>
+  <div class="nav-item" data-nav="reports" onclick="nav('reports')"><div class="nav-icon">📈</div>Reports</div>
+  <div class="nav-item" data-nav="ratings" onclick="nav('ratings')"><div class="nav-icon">⭐</div>Satisfaction Ratings</div>
+  <div class="nav-item" data-nav="feedback" onclick="nav('feedback')"><div class="nav-icon">💬</div>Feedback<span class="nav-badge" id="nb-feedback-u" style="background:var(--green)">New</span></div>
+
+  <div class="sidebar-footer">
+    <div class="nav-item" style="cursor:default">
+      <div style="width:30px;height:30px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;flex-shrink:0" id="sb-av">U</div>
+      <div><div style="font-size:12px;font-weight:600;color:var(--txt)" id="sb-name">Customer</div><div style="font-size:11px;color:var(--txt3)" id="sb-role">Customer</div></div>
+    </div>
+    <div class="nav-item" onclick="promptLogout()" style="color:var(--red);font-size:12px;margin-top:2px">
+      <div class="nav-icon" style="font-size:13px">🔒</div>Sign Out
+    </div>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- ── Dashboard (same as admin, read-only) ── -->
+  <div class="page" id="p-dashboard">
+    <div class="ph">
+      <div class="ph-left"><div class="ph-title">Dashboard</div><div class="ph-sub">Overview of all complaint activity</div></div>
+      <div class="ph-right">
+        <button class="btn btn-ghost btn-sm" onclick="refreshDash()">↺ Refresh</button>
+        <button class="btn btn-primary btn-sm" onclick="nav('submit')">＋ Submit Complaint</button>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="sc" onclick="nav('tickets')"><div class="sc-top"><div class="sc-icon" style="background:rgba(26,79,160,.1)">📬</div><span class="sc-trend t-up">+12%</span></div><div class="sc-val" id="s-total">0</div><div class="sc-label">Total Complaints</div></div>
+      <div class="sc" onclick="nav('tickets');setFilter('Resolved')"><div class="sc-top"><div class="sc-icon" style="background:var(--green-bg)">✅</div><span class="sc-trend t-up">+8%</span></div><div class="sc-val" id="s-res">0</div><div class="sc-label">Resolved</div></div>
+      <div class="sc" onclick="nav('tickets');setFilter('In Progress')"><div class="sc-top"><div class="sc-icon" style="background:var(--blue-bg)">🔄</div><span class="sc-trend t-fl">0%</span></div><div class="sc-val" id="s-prog">0</div><div class="sc-label">In Progress</div></div>
+      <div class="sc" onclick="nav('tickets');setFilter('Pending')"><div class="sc-top"><div class="sc-icon" style="background:var(--yellow-bg)">⏳</div><span class="sc-trend t-dn">−3%</span></div><div class="sc-val" id="s-pend">0</div><div class="sc-label">Pending</div></div>
+    </div>
+    <div class="charts">
+      <div class="card"><div class="card-hd"><div class="card-title">Complaint Volume by Status</div><select class="fs" style="width:auto;font-size:12px;padding:5px 28px 5px 10px" onchange="drawBarChart()"><option>All Time</option><option>This Month</option><option>Last 30 Days</option></select></div><div class="bar-chart" id="bar-chart"></div></div>
+      <div class="card"><div class="card-hd"><div class="card-title">Status Breakdown</div></div><div class="donut-wrap"><svg id="donut" width="110" height="110" viewBox="0 0 100 100" style="flex-shrink:0"></svg><div class="dlegend" id="dlegend"></div></div></div>
+    </div>
+    <div class="card"><div class="card-hd"><div class="card-title">Recent Activity</div><button class="btn btn-ghost btn-sm" onclick="nav('tickets')">View All →</button></div><div class="tbl-wrap"><table><thead><tr><th>Ref #</th><th>Customer</th><th>Type</th><th>Status</th><th>Assigned To</th></tr></thead><tbody id="recent-tb"></tbody></table></div></div>
+  </div>
+
+  <!-- ── Submit Complaint ── -->
+  <div class="page" id="p-submit">
+    <div class="ph"><div class="ph-left"><div class="ph-title">Submit Complaint</div><div class="ph-sub">Module 01 — Fill in the form to submit your complaint</div></div></div>
+    <div class="sub-layout">
+      <div class="sub-card">
+        <div id="sub-form-wrap">
+          <div class="sub-hd"><div class="sub-title">Submit New Complaint</div><div class="sub-sub">Fill in all required fields — we resolve, you move on.</div></div>
+          <div class="sub-body">
+            <div class="form-row">
+              <div class="fg"><label class="fl">Full Name *</label><input id="c-name" class="fi" type="text" placeholder="Your full name"></div>
+              <div class="fg"><label class="fl">Email Address *</label><input id="c-email" class="fi" type="email" placeholder="you@example.com"></div>
+            </div>
+            <div class="fg"><label class="fl">Complaint Type *</label>
+              <select id="c-type" class="fs" onchange="updateRoute()">
+                <option value="">— Select type —</option>
+                <option>Billing Dispute</option><option>Technical Issue</option><option>General Inquiry</option><option>Service Quality</option>
+              </select>
+            </div>
+            <div class="fg"><label class="fl">Priority Level *</label>
+              <select id="c-priority" class="fs">
+                <option value="Low">🟢 Low — General question or minor issue</option>
+                <option value="Medium" selected>🟡 Medium — Affecting my workflow</option>
+                <option value="High">🟠 High — Significant impact on operations</option>
+                <option value="Urgent">🔴 Urgent — Critical / system down</option>
+              </select>
+            </div>
+            <div class="fg"><label class="fl">Subject *</label><input id="c-subj" class="fi" type="text" placeholder="Brief summary of your issue"></div>
+            <div class="fg"><label class="fl">Description *</label><textarea id="c-desc" class="fta" rows="5" placeholder="Describe your complaint in detail…"></textarea></div>
+          </div>
+          <div class="sub-foot">
+            <div style="font-size:12px;color:var(--txt3)">Routes to: <span class="route-tag" id="route-tag">Select type first</span></div>
+            <button class="btn btn-primary" onclick="submitComplaint()">Submit Complaint →</button>
+          </div>
+        </div>
+        <div class="success-screen" id="sub-success">
+          <div class="suc-icon">✅</div>
+          <div class="suc-ref" id="suc-ref">RV-XXXX</div>
+          <div style="font-size:15px;font-weight:700;color:var(--txt)">Complaint Submitted!</div>
+          <div style="font-size:13px;color:var(--txt2)">Assigned to <strong id="suc-assign" style="color:var(--accent)">—</strong></div>
+          <p style="font-size:12px;color:var(--txt3);max-width:280px">Save your reference number. Track it anytime.</p>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
+            <button class="btn btn-ghost" onclick="resetForm()">Submit Another</button>
+            <button class="btn btn-primary" onclick="nav('track')">Track My Complaint →</button>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="card"><div class="card-title" style="margin-bottom:12px">Auto-Assign Routing</div>
+          <div class="route-list">
+            <div class="rl-item"><span class="rl-from">Billing Dispute</span><span class="rl-arr">→</span><span class="rl-to">Finance Team</span></div>
+            <div class="rl-item"><span class="rl-from">Technical Issue</span><span class="rl-arr">→</span><span class="rl-to">Tech Support</span></div>
+            <div class="rl-item"><span class="rl-from">General Inquiry</span><span class="rl-arr">→</span><span class="rl-to">Customer Success</span></div>
+            <div class="rl-item"><span class="rl-from">Service Quality</span><span class="rl-arr">→</span><span class="rl-to">Quality Team</span></div>
+          </div>
+        </div>
+        <div class="card"><div class="card-title" style="margin-bottom:12px">What Happens Next?</div>
+          <div class="steps">
+            <div class="step"><div class="step-n">1</div><div class="step-t">Your complaint gets a unique Resolvia reference number.</div></div>
+            <div class="step"><div class="step-n">2</div><div class="step-t">Auto-assigned to the right team — no delays, no confusion.</div></div>
+            <div class="step"><div class="step-n">3</div><div class="step-t">Staff acts fast and resolves with notes logged.</div></div>
+            <div class="step"><div class="step-n">4</div><div class="step-t">Track your progress anytime using your reference number.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── All Tickets (user: read-only, no delete, no inline status) ── -->
+  <div class="page" id="p-tickets">
+    <div class="ph">
+      <div class="ph-left"><div class="ph-title">All Tickets</div><div class="ph-sub">Module 03 · View all complaint tickets — contact admin to update status</div></div>
+      <div class="ph-right"><button class="btn btn-primary btn-sm" onclick="nav('submit')">＋ New Ticket</button></div>
+    </div>
+    <div class="filter-bar">
+      <input id="f-search" class="fi" type="text" placeholder="Search ref, customer…" oninput="applyFilters()">
+      <select id="f-status" class="fs" onchange="applyFilters()"><option value="">All Statuses</option><option>Pending</option><option>In Progress</option><option>Resolved</option></select>
+      <select id="f-type" class="fs" onchange="applyFilters()"><option value="">All Types</option><option>Billing Dispute</option><option>Technical Issue</option><option>General Inquiry</option><option>Service Quality</option></select>
+      <select id="f-priority" class="fs" onchange="applyFilters()"><option value="">All Priorities</option><option>Urgent</option><option>High</option><option>Medium</option><option>Low</option></select>
+      <div style="margin-left:auto"><button class="btn btn-ghost btn-sm" onclick="clearFilters()">Clear</button></div>
+    </div>
+    <div class="card" style="padding:0;overflow:hidden">
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Ref #</th><th>Date</th><th>Customer</th><th>Type</th><th>Priority</th><th>Status</th><th>Assigned To</th><th></th></tr></thead>
+        <tbody id="tkt-tbody"></tbody>
+      </table></div>
+      <div class="pag"><span id="pag-info">—</span><div class="pag-btns" id="pag-btns"></div></div>
+    </div>
+  </div>
+
+  <!-- ── My Tickets ── -->
+  <div class="page" id="p-mytickets">
+    <div class="ph">
+      <div class="ph-left"><div class="ph-title">My Tickets</div><div class="ph-sub">View and track your submitted complaints</div></div>
+      <div class="ph-right"><button class="btn btn-primary btn-sm" onclick="nav('submit')">＋ New Complaint</button></div>
+    </div>
+
+    <!-- Track search -->
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title" style="margin-bottom:12px">🔍 Find a Complaint</div>
+      <div style="display:flex;gap:8px">
+        <input id="my-track-in" class="fi" type="text" placeholder="Enter ref number (e.g. RV-1001) or keyword" onkeydown="if(event.key==='Enter')myTrackLookup()" style="flex:1">
+        <button class="btn btn-primary" onclick="myTrackLookup()">Search</button>
+      </div>
+      <div class="track-results" id="my-track-results" style="margin-top:12px"></div>
+    </div>
+
+    <!-- My complaints table -->
+    <div class="card" style="padding:0;overflow:hidden">
+      <div style="padding:14px 16px;border-bottom:1.5px solid var(--border);font-family:var(--fd);font-size:13px;font-weight:700;background:var(--surface2)">My Complaints</div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Ref #</th><th>Date</th><th>Type</th><th>Priority</th><th>Status</th><th>Assigned To</th></tr></thead>
+        <tbody id="my-tkt-tbody"></tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <!-- ── Reports ── -->
+  <div class="page" id="p-reports">
+    <div class="ph"><div class="ph-left"><div class="ph-title">Reports</div><div class="ph-sub">Module 08 — Complaint activity overview</div></div></div>
+    <div class="rpt-layout">
+      <div>
+        <div class="rpt-bar">
+          <select id="rpt-period" class="fs" style="width:auto;max-width:160px" onchange="renderReports()"><option>Last 30 Days</option><option>Last 90 Days</option><option>All Time</option></select>
+          <select id="rpt-type" class="fs" style="width:auto;max-width:180px" onchange="renderReports()"><option value="">All Types</option><option>Billing Dispute</option><option>Technical Issue</option><option>General Inquiry</option><option>Service Quality</option></select>
+        </div>
+        <div class="card" style="padding:0;overflow:hidden">
+          <div style="padding:14px 16px;border-bottom:1.5px solid var(--border);font-family:var(--fd);font-size:13px;font-weight:700;background:var(--surface2)">Recurring Issues &amp; Resolution Rates</div>
+          <div class="tbl-wrap"><table><thead><tr><th>Complaint Type</th><th>Total</th><th>Resolved</th><th>Pending</th><th>Resolution Rate</th></tr></thead><tbody id="rpt-tbody"></tbody></table></div>
+        </div>
+      </div>
+      <div class="card" style="position:sticky;top:80px">
+        <div class="card-title" style="margin-bottom:14px">Summary</div>
+        <div class="rpt-sum">
+          <div class="sum-row"><span class="sum-k">Total Complaints</span><span class="sum-v" id="rs-total">—</span></div>
+          <div class="div"></div>
+          <div class="sum-row"><span class="sum-k">Resolved</span><span class="sum-v" style="color:var(--green)" id="rs-res">—</span></div>
+          <div class="sum-row"><span class="sum-k">In Progress</span><span class="sum-v" style="color:var(--blue)" id="rs-prog">—</span></div>
+          <div class="sum-row"><span class="sum-k">Pending</span><span class="sum-v" style="color:var(--yellow)" id="rs-pend">—</span></div>
+          <div class="div"></div>
+          <div class="sum-row"><span class="sum-k">Resolution Rate</span><span class="sum-v" id="rs-rate">—</span></div>
+          <div class="sum-row"><span class="sum-k">Avg. Resolution</span><span class="sum-v">2.4 days</span></div>
+        </div>
+        <div style="margin-top:16px"><div style="font-size:11px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Type Breakdown</div><div id="type-bars" style="display:flex;flex-direction:column;gap:8px"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Satisfaction Ratings ── -->
+  <div class="page" id="p-ratings">
+    <div class="ph">
+      <div class="ph-left"><div class="ph-title">Satisfaction Ratings</div><div class="ph-sub">Customer feedback on resolved complaints</div></div>
+    </div>
+    <div class="rpt-layout">
+      <div>
+        <div class="card" style="padding:0;overflow:hidden">
+          <div style="padding:14px 16px;border-bottom:1.5px solid var(--border);font-family:var(--fd);font-size:13px;font-weight:700;background:var(--surface2)">Rated Tickets</div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>Ref #</th><th>Customer</th><th>Type</th><th>Assigned To</th><th>Rating</th></tr></thead>
+            <tbody id="ratings-tbody"></tbody>
+          </table></div>
+        </div>
+      </div>
+      <div class="card" style="position:sticky;top:80px">
+        <div class="card-title" style="margin-bottom:4px">Average Rating</div>
+        <div id="avg-rating" style="font-size:32px;font-weight:800;color:var(--txt);margin-bottom:2px">—</div>
+        <div id="rated-count" style="font-size:12px;color:var(--txt3);margin-bottom:18px">0 ratings received</div>
+        <div class="card-title" style="margin-bottom:10px">Score Distribution</div>
+        <div id="rating-bars" style="display:flex;flex-direction:column;gap:8px"></div>
+        <div style="margin-top:18px;padding:12px;background:var(--surface2);border-radius:var(--r2);font-size:12px;color:var(--txt3);line-height:1.6">
+          💡 Ratings are submitted by customers after their ticket is resolved. Rate your resolved tickets in the <strong style="color:var(--txt)">Track Status</strong> or <strong style="color:var(--txt)">All Tickets</strong> view.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Customer Feedback ── -->
+  <div class="page" id="p-feedback">
+    <div class="ph">
+      <div class="ph-left"><div class="ph-title">Submit Feedback</div><div class="ph-sub">Your feedback is categorized by AI and delivered directly to our staff</div></div>
+      <div class="ph-right"><span style="font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--accent);background:var(--blue-bg);border:1px solid rgba(55,88,200,.2);border-radius:20px;padding:3px 10px">✨ AI Powered</span></div>
+    </div>
+
+    <!-- Submit new feedback -->
+    <div class="sub-layout" style="grid-template-columns:1fr 340px">
+      <div class="sub-card">
+        <div class="sub-hd"><div class="sub-title">Share Your Experience</div><div class="sub-sub">Tell us how we did — staff will read and reply to your feedback.</div></div>
+        <div class="sub-body">
+          <div class="fg">
+            <label class="fl">Related Ticket (optional)</label>
+            <select id="fb-ticket-ref" class="fs">
+              <option value="">— Select a resolved ticket —</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label class="fl">Your Feedback *</label>
+            <textarea id="fb-text-input" class="fta" rows="5" placeholder="Describe your experience — what went well, what could be improved, or any suggestions…"></textarea>
+          </div>
+          <div id="fb-ai-result" style="display:none;margin-top:10px;padding:12px 14px;background:var(--blue-bg);border:1.5px solid rgba(55,88,200,.18);border-radius:var(--r2)">
+            <div style="font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px">✨ AI Analysis</div>
+            <div id="fb-ai-category" style="font-size:13px;color:var(--txt);font-weight:600"></div>
+            <div id="fb-ai-summary" style="font-size:12px;color:var(--txt2);margin-top:4px;line-height:1.6"></div>
+            <div id="fb-ai-route" style="font-size:11px;color:var(--txt3);margin-top:6px"></div>
+          </div>
+          <div id="fb-analyzing" style="display:none;margin-top:10px;padding:12px 14px;background:var(--surface2);border-radius:var(--r2);font-size:12px;color:var(--txt3);text-align:center">
+            <span style="animation:spin 1s linear infinite;display:inline-block;margin-right:6px">⏳</span> AI is categorizing your feedback…
+          </div>
+        </div>
+        <div class="sub-foot">
+          <button class="btn btn-ghost" onclick="analyzeFeedback()" id="fb-analyze-btn">✨ Analyze First</button>
+          <button class="btn btn-primary" onclick="submitUserFeedback()" id="fb-submit-btn">Submit Feedback →</button>
+        </div>
+        <div class="success-screen" id="fb-success" style="display:none">
+          <div class="suc-icon">💬</div>
+          <div style="font-size:15px;font-weight:700;color:var(--txt);margin-top:8px">Feedback Submitted!</div>
+          <div style="font-size:13px;color:var(--txt2);margin-top:4px">Your feedback has been categorized and sent to our team.</div>
+          <div id="fb-suc-category" style="margin-top:10px"></div>
+          <button class="btn btn-ghost" style="margin-top:14px" onclick="resetFeedbackForm()">Submit Another</button>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="card"><div class="card-title" style="margin-bottom:10px">How Feedback Works</div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="display:flex;gap:10px;align-items:flex-start">
+              <div style="width:28px;height:28px;border-radius:50%;background:var(--blue-bg);color:var(--accent);font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">1</div>
+              <div><div style="font-size:12px;font-weight:700;color:var(--txt)">You write your feedback</div><div style="font-size:11px;color:var(--txt3);margin-top:2px">About any aspect of our service</div></div>
+            </div>
+            <div style="display:flex;gap:10px;align-items:flex-start">
+              <div style="width:28px;height:28px;border-radius:50%;background:var(--blue-bg);color:var(--accent);font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">2</div>
+              <div><div style="font-size:12px;font-weight:700;color:var(--txt)">AI categorizes it</div><div style="font-size:11px;color:var(--txt3);margin-top:2px">Into Service Quality, Response Time, Staff Attitude, etc.</div></div>
+            </div>
+            <div style="display:flex;gap:10px;align-items:flex-start">
+              <div style="width:28px;height:28px;border-radius:50%;background:var(--blue-bg);color:var(--accent);font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">3</div>
+              <div><div style="font-size:12px;font-weight:700;color:var(--txt)">Delivered to staff</div><div style="font-size:11px;color:var(--txt3);margin-top:2px">The right team member receives it automatically</div></div>
+            </div>
+            <div style="display:flex;gap:10px;align-items:flex-start">
+              <div style="width:28px;height:28px;border-radius:50%;background:var(--green-bg);color:var(--green);font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">4</div>
+              <div><div style="font-size:12px;font-weight:700;color:var(--txt)">Staff replies here</div><div style="font-size:11px;color:var(--txt3);margin-top:2px">Check your submitted feedback below for responses</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Past feedback submitted by this user -->
+    <div style="margin-top:24px">
+      <div class="card-hd" style="margin-bottom:12px"><div class="card-title">Your Submitted Feedback</div></div>
+      <div id="user-feedback-list" style="display:flex;flex-direction:column;gap:12px">
+        <div style="text-align:center;padding:30px;color:var(--txt3);font-size:13px">No feedback submitted yet.</div>
+      </div>
+    </div>
+  </div>
+
+</main>
+</div><!-- /shell -->
+
+<!-- TICKET DETAIL PANEL (read-only for users) -->
+<div class="overlay" id="overlay" onclick="closePanel()"></div>
+<aside class="panel" id="panel">
+  <div class="pn-hd"><div class="pn-title" id="pn-ref">Ticket —</div><button class="pn-close" onclick="closePanel()">✕</button></div>
+  <div class="pn-body">
+    <div>
+      <div class="pn-sec-title">Ticket Details</div>
+      <div class="meta-grid">
+        <div><div class="meta-k">Customer</div><div class="meta-v" id="pn-cust">—</div></div>
+        <div><div class="meta-k">Email</div><div class="meta-v" id="pn-email" style="font-size:12px">—</div></div>
+        <div><div class="meta-k">Type</div><div class="meta-v" id="pn-type">—</div></div>
+        <div><div class="meta-k">Submitted</div><div class="meta-v" id="pn-date">—</div></div>
+        <div><div class="meta-k">Assigned To</div><div class="meta-v" id="pn-asgn">—</div></div>
+        <div><div class="meta-k">Status</div><div class="meta-v" id="pn-status-disp">—</div></div>
+        <div><div class="meta-k">Priority</div><div class="meta-v" id="pn-priority">—</div></div>
+      </div>
+    </div>
+    <div><div class="pn-sec-title">Description</div><div class="desc-box" id="pn-desc">—</div></div>
+    <div>
+      <div class="pn-sec-title">Resolution Notes</div>
+      <div class="desc-box" id="pn-notes-view" style="min-height:60px;color:var(--txt3);font-style:italic">No resolution notes yet.</div>
+    </div>
+    <div>
+      <div class="pn-sec-title">Status Updates</div>
+      <div class="user-locked">🔒 Status changes are managed by admin staff only.</div>
+    </div>
+    <div>
+      <div class="pn-sec-title">⭐ Rate Your Experience</div>
+      <div id="pn-rating-wrap" style="padding:4px 0"></div>
+    </div>
+    <div><div class="pn-sec-title">Audit Trail</div><div class="audit" id="pn-audit"></div></div>
+  </div>
+</aside>
+
+<!-- NOTIFICATIONS PANEL -->
+<div class="notif-panel" id="notif-panel">
+  <div class="notif-hd"><div class="notif-title">Notifications</div><div class="notif-actions"><span class="notif-mark-all" onclick="markAllNotifsRead()">Mark all read</span></div></div>
+  <div class="notif-list" id="notif-list"></div>
+  <div class="notif-footer"><span class="notif-view-all" onclick="showToast('📋','View all — coming soon')">View all notifications</span></div>
+</div>
+
+<!-- SETTINGS PANEL -->
+<div class="settings-panel" id="settings-panel">
+  <div class="settings-hd"><div class="settings-title">Settings</div><div class="settings-sub">Personalize your Resolvia experience</div></div>
+  <div class="settings-body">
+    <div class="settings-section">Appearance</div>
+    <div class="setting-row"><div class="setting-info"><div class="setting-label">🌙 Dark Mode</div><div class="setting-desc">Switch to dark color scheme</div></div><label class="toggle"><input type="checkbox" id="toggle-dark" onchange="toggleDarkMode()"><span class="toggle-track"></span></label></div>
+    <div class="setting-row"><div class="setting-info"><div class="setting-label">📐 Compact View</div><div class="setting-desc">Reduce spacing for more content</div></div><label class="toggle"><input type="checkbox" id="toggle-compact" onchange="toggleCompactMode(this.checked)"><span class="toggle-track"></span></label></div>
+    <div class="settings-div"></div>
+    <div class="settings-section">Notifications</div>
+    <div class="setting-row"><div class="setting-info"><div class="setting-label">🔔 Email Alerts</div><div class="setting-desc">Get updates on your complaint</div></div><label class="toggle"><input type="checkbox" id="toggle-notifs" checked onchange="toggleNotifPref(this.checked)"><span class="toggle-track"></span></label></div>
+    <div class="settings-div"></div>
+    <div class="settings-section">Account</div>
+    <div class="setting-row"><div class="setting-info"><div class="setting-label">🔒 Sign Out</div><div class="setting-desc">End your current session</div></div><button class="btn btn-red btn-sm" onclick="promptLogout()">Sign Out</button></div>
+  </div>
+  <div class="settings-footer">
+    <button class="settings-footer-btn" onclick="resetSettings()">Reset to Defaults</button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"><div class="toast-ic" id="t-ic">✅</div><div class="toast-tx" id="t-tx">Done</div></div>
+
+<script src="js/app.js?v=2"></script>
+<script src="js/auth.js"></script>
+<script src="js/notifications.js?v=2"></script>
+<script src="js/settings.js"></script>
+<script>
+'use strict';
+
+/* ════════════════════════════════════════════════════════════
+   CUSTOMER openTicket — reads from API via DB cache
+════════════════════════════════════════════════════════════ */
+function openTicket(ref) {
+  const token = getToken();
+  const headers = token ? authHeaders() : { 'Content-Type': 'application/json' };
+
+  fetch(`${API}/complaints/${ref}`, { headers })
+    .then(r => r.json())
+    .then(data => {
+      if (!data.ok) { showToast('⚠️', 'Ticket not found.'); return; }
+      const t = data.data;
+      openRef = ref;
+
+      setText('pn-ref',   t.ref_number);
+      setText('pn-cust',  t.customer_name);
+      setText('pn-email', t.customer_email);
+      setText('pn-type',  t.complaint_type);
+      setText('pn-date',  fmtDate(t.submitted_date));
+      setText('pn-asgn',  t.assigned_to || 'Unassigned');
+
+      document.getElementById('pn-status-disp').innerHTML =
+        `<span class="pill ${pillCls(t.status)}">${t.status}</span>`;
+      document.getElementById('pn-priority').innerHTML =
+        `<span class="pill pri-pill ${priorityCls(t.priority)}">${priorityIcon(t.priority)} ${t.priority || 'Medium'}</span>`;
+      document.getElementById('pn-desc').textContent = t.description || t.subject || '—';
+
+      const notesView = document.getElementById('pn-notes-view');
+      if (notesView) notesView.textContent = t.resolution_notes || 'No resolution notes yet.';
+
+      renderRatingUI(t);
+
+      const auditEl = document.getElementById('pn-audit');
+      if (auditEl) {
+        const audit = t.audit_trail || [];
+        auditEl.innerHTML = audit.map(a =>
+          `<div class="au-item"><div class="au-dot"></div><div>
+            <div class="au-txt">${a.audit_entry}</div>
+            <div style="font-size:11px;color:var(--txt3)">${a.recorded_at || ''}</div>
+          </div></div>`).join('') || '<div style="color:var(--txt3);font-size:12px">No activity yet.</div>';
+      }
+
+      document.getElementById('overlay').classList.add('open');
+      document.getElementById('panel').classList.add('open');
+    })
+    .catch(() => showToast('⚠️', 'Could not load ticket.'));
+}
+
+/* ════════════════════════════════════════════════════════════
+   CUSTOMER renderTickets — uses API field names
+════════════════════════════════════════════════════════════ */
+function renderTickets() {
+  const tb = document.getElementById('tkt-tbody');
+  if (!tb) return;
+  const start = (curPage - 1) * PER;
+  const page  = filtered.slice(start, start + PER);
+  tb.innerHTML = page.map(t => `
+    <tr>
+      <td><span class="ref-id" onclick="openTicket('${t.ref_number}')">${t.ref_number}</span></td>
+      <td>${fmtDate(t.submitted_date)}</td>
+      <td style="color:var(--txt);font-weight:500">${t.customer_name}</td>
+      <td>${t.complaint_type}</td>
+      <td><span class="pill pri-pill ${priorityCls(t.priority)}">${priorityIcon(t.priority)} ${t.priority || 'Medium'}</span></td>
+      <td><span class="pill ${pillCls(t.status)}">${t.status}</span></td>
+      <td><div class="asgn"><div class="asgn-av">${ini(t.assigned_to||'UN')}</div>${t.assigned_to||'Unassigned'}</div></td>
+      <td><button class="btn btn-ghost btn-sm" onclick="openTicket('${t.ref_number}')">View →</button></td>
+    </tr>`).join('');
+  renderPag();
+}
+
+/* ════════════════════════════════════════════════════════════
+   CUSTOMER FEEDBACK — connected to Flask API
+════════════════════════════════════════════════════════════ */
+let fbAnalyzed = null;
+
+function loadFeedbackPage() {
+  const token = getToken();
+  if (!token) return;
+
+  /* Populate ticket dropdown with customer's resolved tickets */
+  fetch(`${API}/complaints/mine`, { headers: authHeaders() })
+    .then(r => r.json())
+    .then(data => {
+      const sel = document.getElementById('fb-ticket-ref');
+      if (!sel) return;
+      const resolved = (data.data || []).filter(t => t.status === 'Resolved');
+      sel.innerHTML = '<option value="">— Select a resolved ticket (optional) —</option>' +
+        resolved.map(t => `<option value="${t.ref_number}">${t.ref_number} · ${t.complaint_type} · ${fmtDate(t.submitted_date)}</option>`).join('');
+    })
+    .catch(() => {});
+
+  fbAnalyzed = null;
+  loadUserFeedbacks();
+}
+
+function loadUserFeedbacks() {
+  const token = getToken();
+  if (!token) return;
+
+  fetch(`${API}/feedback`, { headers: authHeaders() })
+    .then(r => r.json())
+    .then(data => {
+      if (!data.ok) return;
+      renderUserFeedbacks(data.data || []);
+    })
+    .catch(() => {});
+}
+
+function renderUserFeedbacks(feedbacks) {
+  const list = document.getElementById('user-feedback-list');
+  if (!list) return;
+
+  if (!feedbacks.length) {
+    list.innerHTML = '<div style="text-align:center;padding:30px;color:var(--txt3);font-size:13px">No feedback submitted yet.</div>';
+    return;
+  }
+
+  const CAT_ICONS = { 'Service Quality':'⭐','Response Time':'⏱','Staff Attitude':'🤝','Resolution':'✅','General':'💬' };
+  list.innerHTML = feedbacks.map(f => `
+    <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r3);padding:16px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px">
+        <span style="font-size:12px;font-weight:700;color:var(--accent);background:var(--blue-bg);padding:3px 9px;border-radius:20px">
+          ${CAT_ICONS[f.category_name]||'💬'} ${f.category_name||'General'}
+        </span>
+        <span style="font-size:11px;color:var(--txt3)">${f.submitted_at?.substring(0,10)||'—'}</span>
+      </div>
+      <div style="font-size:13px;color:var(--txt2);line-height:1.6;padding:10px 12px;background:var(--surface2);border-radius:var(--r2);border-left:3px solid var(--accent);margin-bottom:${f.staff_reply?'10px':'0'}">${f.feedback_text}</div>
+      ${f.staff_reply
+        ? `<div style="margin-top:10px;padding:10px 13px;background:var(--green-bg);border:1.5px solid rgba(22,163,74,.2);border-radius:var(--r2)">
+             <div style="font-size:11px;font-weight:700;color:var(--green);margin-bottom:4px">✅ Staff Reply</div>
+             <div style="font-size:13px;color:var(--txt)">${f.staff_reply}</div>
+           </div>`
+        : `<div style="font-size:11px;color:var(--txt3);margin-top:8px;font-style:italic">⏳ Awaiting staff reply…</div>`}
+    </div>`).join('');
+}
+
+async function analyzeFeedback() {
+  const text = (document.getElementById('fb-text-input')?.value || '').trim();
+  if (!text) { showToast('⚠️', 'Please write your feedback first'); return; }
+
+  const analyzing  = document.getElementById('fb-analyzing');
+  const result     = document.getElementById('fb-ai-result');
+  const analyzeBtn = document.getElementById('fb-analyze-btn');
+
+  result.style.display    = 'none';
+  analyzing.style.display = 'block';
+  if (analyzeBtn) analyzeBtn.disabled = true;
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: `You are a feedback categorization assistant for Resolvia.
+Respond ONLY with valid JSON (no markdown, no extra text):
+{"category":"<Service Quality|Response Time|Staff Attitude|Resolution|General>","summary":"<one sentence>","sentiment":"<Positive|Neutral|Negative>","assignTo":"<Finance Team|Tech Support|Customer Success|Quality Team>"}`,
+        messages: [{ role: 'user', content: `Categorize this feedback: "${text}"` }]
+      })
+    });
+    const data = await response.json();
+    const raw  = data.content?.find(b => b.type === 'text')?.text || '{}';
+    let parsed;
+    try { parsed = JSON.parse(raw.replace(/```json|```/g, '')); }
+    catch(e) { parsed = { category:'General', summary: text.slice(0,80), sentiment:'Neutral', assignTo:'Customer Success' }; }
+
+    fbAnalyzed = parsed;
+    const sentColor = parsed.sentiment === 'Positive' ? 'var(--green)' : parsed.sentiment === 'Negative' ? 'var(--red)' : 'var(--txt2)';
+    const CAT_ICONS = { 'Service Quality':'⭐','Response Time':'⏱','Staff Attitude':'🤝','Resolution':'✅','General':'💬' };
+    document.getElementById('fb-ai-category').innerHTML =
+      `<span style="margin-right:8px">${CAT_ICONS[parsed.category]||'💬'} ${parsed.category}</span><span style="color:${sentColor};font-size:12px">${parsed.sentiment}</span>`;
+    document.getElementById('fb-ai-summary').textContent = parsed.summary;
+    document.getElementById('fb-ai-route').textContent   = `📤 Will be routed to: ${parsed.assignTo}`;
+    result.style.display = 'block';
+  } catch(e) {
+    fbAnalyzed = { category:'General', summary:'', sentiment:'Neutral', assignTo:'Customer Success' };
+    document.getElementById('fb-ai-category').textContent = '💬 General';
+    document.getElementById('fb-ai-summary').textContent  = 'Could not analyze — feedback will be sent as General.';
+    document.getElementById('fb-ai-route').textContent    = '📤 Will be routed to: Customer Success';
+    result.style.display = 'block';
+  } finally {
+    analyzing.style.display = 'none';
+    if (analyzeBtn) analyzeBtn.disabled = false;
+  }
+}
+
+function submitUserFeedback() {
+  const text      = (document.getElementById('fb-text-input')?.value || '').trim();
+  const ticketRef = document.getElementById('fb-ticket-ref')?.value || '';
+  const token     = getToken();
+
+  if (!text)  { showToast('⚠️', 'Please write your feedback first'); return; }
+  if (!token) { showToast('⚠️', 'Please log in to submit feedback'); return; }
+
+  const cat      = fbAnalyzed || { category:'General', sentiment:'Neutral' };
+  const sentMap  = { 'Positive':1, 'Neutral':2, 'Negative':3 };
+  const catNames = ['Service Quality','Response Time','Staff Attitude','Resolution','General'];
+
+  /* Find complaint_id if ticket selected */
+  const selectedTicket = ticketRef
+    ? DB.find(t => t.ref_number === ticketRef)
+    : null;
+
+  fetch(`${API}/feedback`, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify({
+      feedback_text: text,
+      category:      cat.category || 'General',
+      sentiment:     cat.sentiment || 'Neutral',
+      complaint_ref: ticketRef || null
+    })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (!data.ok) { showToast('⚠️', data.message || 'Submission failed.'); return; }
+
+    const CAT_ICONS = { 'Service Quality':'⭐','Response Time':'⏱','Staff Attitude':'🤝','Resolution':'✅','General':'💬' };
+    document.getElementById('fb-suc-category').innerHTML =
+      `<span style="font-size:14px;font-weight:700;color:var(--accent);background:var(--blue-bg);padding:5px 14px;border-radius:20px">${CAT_ICONS[cat.category]||'💬'} ${cat.category}</span>`;
+
+    document.getElementById('fb-text-input').closest('.sub-body').style.display = 'none';
+    document.querySelector('#p-feedback .sub-foot').style.display = 'none';
+    document.querySelector('#p-feedback .sub-hd').style.display = 'none';
+    document.getElementById('fb-ai-result').style.display = 'none';
+    const successEl = document.getElementById('fb-success');
+    successEl.style.display = 'flex';
+    successEl.style.flexDirection = 'column';
+    successEl.style.alignItems = 'center';
+
+    showToast('💬', 'Feedback submitted!');
+    fbAnalyzed = null;
+    loadUserFeedbacks();
+  })
+  .catch(() => showToast('⚠️', 'Could not submit feedback.'));
+}
+
+function resetFeedbackForm() {
+  const inp = document.getElementById('fb-text-input');
+  if (inp) inp.value = '';
+  ['fb-ai-result','fb-analyzing'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.style.display='none';
+  });
+  const body = document.getElementById('fb-text-input')?.closest('.sub-body');
+  if (body) body.style.display = '';
+  const foot = document.querySelector('#p-feedback .sub-foot');
+  if (foot) foot.style.display = '';
+  const hd = document.querySelector('#p-feedback .sub-hd');
+  if (hd) hd.style.display = '';
+  const suc = document.getElementById('fb-success');
+  if (suc) suc.style.display = 'none';
+  fbAnalyzed = null;
+}
+
+/* ════════════════════════════════════════════════════════════
+   SATISFACTION RATING
+   Customers rate their resolved tickets from the ticket panel
+════════════════════════════════════════════════════════════ */
+function submitRating(ref, stars) {
+  const token = getToken();
+  if (!token) { showToast('⚠️', 'Please log in to rate.'); return; }
+
+  fetch(`${API}/complaints/${ref}/rate`, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify({ rating: stars })
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (!data.ok) { showToast('⚠️', data.message || 'Rating failed.'); return; }
+    showToast('🌟', `Thank you! You rated ${ref} — ${stars}/5 stars`);
+    openTicket(ref); /* refresh panel */
+  })
+  .catch(() => showToast('⚠️', 'Could not submit rating.'));
+}
+
+function renderRatingUI(t) {
+  const wrap = document.getElementById('pn-rating-wrap');
+  if (!wrap) return;
+
+  if (t.status !== 'Resolved') {
+    wrap.innerHTML = `<div style="font-size:12px;color:var(--txt3);font-style:italic">
+      ⭐ Rating available once your ticket is resolved.</div>`;
+    return;
+  }
+  if (t.satisfaction_rating) {
+    wrap.innerHTML = `<div style="display:flex;align-items:center;gap:8px">
+      <span style="font-size:20px">${'⭐'.repeat(t.satisfaction_rating)}</span>
+      <span style="font-size:12px;color:var(--txt3)">${t.satisfaction_rating}/5 — Thank you for your feedback!</span>
+    </div>`;
+    return;
+  }
+  wrap.innerHTML = `
+    <div style="font-size:12px;color:var(--txt2);margin-bottom:8px">How satisfied are you with the resolution?</div>
+    <div class="star-rating">
+      ${[1,2,3,4,5].map(s => `
+        <button class="star-btn" onclick="submitRating('${t.ref_number}',${s})" title="${s} star${s>1?'s':''}">★</button>
+      `).join('')}
+    </div>`;
+}
+
+/* ════════════════════════════════════════════════════════════
+   NAV OVERRIDE
+════════════════════════════════════════════════════════════ */
+const _origNavUser = nav;
+nav = function(id) {
+  _origNavUser(id);
+  if (id === 'feedback') loadFeedbackPage();
+};
+
+/* ════════════════════════════════════════════════════════════
+   BOOT
+════════════════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+  initSettings();
+  initNotifications();
+  initAuth('user');
+  updateTopbarUser();
+  const badge = document.getElementById('nb-feedback-u');
+  if (badge) badge.style.display = 'none';
+  if (isLoggedIn()) nav('dashboard');
+});
+</script>
