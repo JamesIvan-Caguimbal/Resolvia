@@ -258,9 +258,9 @@ def list_complaints():
         where_clauses.append("priority = %s")
         values.append(params["priority"])
     if params.get("search"):
-        where_clauses.append("(ref_number LIKE %s OR customer_name LIKE %s OR subject LIKE %s)")
+        where_clauses.append("(LOWER(ref_number) LIKE LOWER(%s) OR LOWER(customer_name) LIKE LOWER(%s) OR LOWER(subject) LIKE LOWER(%s) OR LOWER(customer_email) LIKE LOWER(%s))")
         like = f"%{params['search']}%"
-        values += [like, like, like]
+        values += [like, like, like, like]
 
     where_sql = ("WHERE " + " AND ".join(where_clauses)) if where_clauses else ""
 
@@ -388,9 +388,9 @@ def list_all_complaints():
         where_clauses.append("priority = %s")
         values.append(params["priority"])
     if params.get("search"):
-        where_clauses.append("(ref_number LIKE %s OR customer_name LIKE %s OR subject LIKE %s)")
+        where_clauses.append("(LOWER(ref_number) LIKE LOWER(%s) OR LOWER(customer_name) LIKE LOWER(%s) OR LOWER(subject) LIKE LOWER(%s) OR LOWER(customer_email) LIKE LOWER(%s))")
         like = f"%{params['search']}%"
-        values += [like, like, like]
+        values += [like, like, like, like]
 
     where_sql = ("WHERE " + " AND ".join(where_clauses)) if where_clauses else ""
     limit  = int(params.get("limit", 50))
@@ -428,9 +428,9 @@ def list_my_complaints():
             values.append(email)
 
     if params.get("search"):
-        where_clauses.append("(ref_number LIKE %s OR subject LIKE %s)")
+        where_clauses.append("(LOWER(ref_number) LIKE LOWER(%s) OR LOWER(subject) LIKE LOWER(%s) OR LOWER(customer_name) LIKE LOWER(%s))")
         like = f"%{params['search']}%"
-        values += [like, like]
+        values += [like, like, like]
 
     where_sql = ("WHERE " + " AND ".join(where_clauses)) if where_clauses else ""
     limit  = int(params.get("limit", 200))
@@ -485,23 +485,22 @@ def update_complaint(ref):
         current_status = current["status_name"]
         new_status     = body["status"]
 
-        # No backward movement allowed for anyone
-        backward = {
-            "In Progress": ["Pending"],
-            "Resolved":    ["Pending", "In Progress"]
-        }
-        if new_status in backward.get(current_status, []):
-            return err(f"Cannot move ticket backward from '{current_status}' to '{new_status}'.")
-
-        # Admins can jump Pending → Resolved, staff must follow order
+        # Admin can freely change status; staff must follow order
         is_admin = identity.get("role") == "Administrator"
-        allowed = {
-            "Pending":     ["In Progress", "Resolved"] if is_admin else ["In Progress"],
-            "In Progress": ["Resolved"],
-            "Resolved":    []
-        }
-        if new_status not in allowed.get(current_status, []):
-            return err(f"Cannot move ticket from '{current_status}' to '{new_status}'.")
+        if not is_admin:
+            backward = {
+                "In Progress": ["Pending"],
+                "Resolved":    ["Pending", "In Progress"]
+            }
+            if new_status in backward.get(current_status, []):
+                return err(f"Cannot move ticket backward from '{current_status}' to '{new_status}'.")
+            allowed_staff = {
+                "Pending":     ["In Progress"],
+                "In Progress": ["Resolved"],
+                "Resolved":    []
+            }
+            if new_status not in allowed_staff.get(current_status, []):
+                return err(f"Cannot move ticket from '{current_status}' to '{new_status}'.")
 
         updates.append("status_id = %s")
         values.append(status_row["status_id"])

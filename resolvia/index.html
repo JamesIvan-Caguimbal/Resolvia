@@ -583,6 +583,37 @@ function openTicket(ref) {
 }
 
 /* ════════════════════════════════════════════════════════════
+   CUSTOMER loadTickets — shows only current customer's tickets
+════════════════════════════════════════════════════════════ */
+function loadTickets() {
+  const token = getToken();
+  if (!token) return;
+
+  const status   = document.getElementById('f-status')?.value   || '';
+  const type     = document.getElementById('f-type')?.value     || '';
+  const priority = document.getElementById('f-priority')?.value || '';
+  const search   = document.getElementById('f-search')?.value   || '';
+
+  let url = `${API}/complaints/mine?limit=200`;
+  if (status)   url += `&status=${encodeURIComponent(status)}`;
+  if (type)     url += `&type=${encodeURIComponent(type)}`;
+  if (priority) url += `&priority=${encodeURIComponent(priority)}`;
+  if (search)   url += `&search=${encodeURIComponent(search)}`;
+
+  fetch(url, { headers: authHeaders() })
+    .then(r => r.json())
+    .then(data => {
+      if (!data.ok) return;
+      DB       = data.data;
+      filtered = [...DB];
+      curPage  = 1;
+      renderTickets();
+      updateBadges();
+    })
+    .catch(() => showToast('⚠️', 'Could not load tickets.'));
+}
+
+/* ════════════════════════════════════════════════════════════
    CUSTOMER renderTickets — uses API field names
 ════════════════════════════════════════════════════════════ */
 function renderTickets() {

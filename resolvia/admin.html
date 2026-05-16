@@ -75,7 +75,6 @@
       <div class="auth-tagline">Staff & Administrator Portal</div>
       <div class="auth-role-tabs" style="margin-top:14px">
         <div class="auth-role-tab active">🛡️ Admin / Staff</div>
-        <div class="auth-role-tab" onclick="clearSession();window.location.href='/'">👤 Customer Portal</div>
       </div>
     </div>
 
@@ -167,7 +166,7 @@
 
     <div class="auth-footer">
       Demo: <strong>admin</strong> / <strong>Admin@2025</strong> &nbsp;·&nbsp;
-      Customer? <a href="index.html">Customer Portal →</a>
+      
     </div>
   </div>
 </div>
@@ -226,7 +225,7 @@
     </div>
   </div>
   <div class="topbar-right">
-    <span class="admin-badge">🛡️ Admin Mode</span>
+    <span class="admin-badge" id="role-mode-badge">🛡️ Admin Mode</span>
     <div class="tb-btn" id="btn-notif" onclick="toggleNotifPanel()" title="Notifications" style="position:relative">
       <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
       <span class="notif-count" id="notif-count"></span>
@@ -256,8 +255,6 @@
   <div class="nav-item" data-nav="dashboard" onclick="nav('dashboard')"><div class="nav-icon">📊</div>Dashboard<span class="nav-badge" id="nb-dash">Live</span></div>
   <span class="nav-label">Operations</span>
   <div class="nav-item" data-nav="tickets" onclick="nav('tickets')"><div class="nav-icon">🎫</div>All Tickets<span class="nav-badge" id="nb-tickets">10</span></div>
-  <div class="nav-item" data-nav="resolve" onclick="nav('resolve')" style="display:none"><div class="nav-icon">✅</div>Mark Resolved<span class="nav-badge" id="nb-open">—</span></div>
-  <div class="nav-item" data-nav="mytickets-admin" onclick="nav('mytickets-admin')" style="display:none"><div class="nav-icon">🎟️</div>My Tickets</div>
   <div class="nav-item" data-nav="track" onclick="nav('track')"><div class="nav-icon">🔍</div>Customer Tracking</div>
   <span class="nav-label">Analytics</span>
   <div class="nav-item" data-nav="reports" onclick="nav('reports')"><div class="nav-icon">📈</div>Basic Reports</div>
@@ -271,7 +268,6 @@
       <div><div style="font-size:12px;font-weight:600;color:var(--txt)" id="sb-name">Admin User</div><div style="font-size:11px;color:var(--txt3)" id="sb-role">Administrator</div></div>
     </div>
     <div class="nav-item" onclick="clearSession();window.location.href='/'" style="color:var(--txt3);font-size:12px;margin-top:2px">
-      <div class="nav-icon" style="font-size:13px">↩</div>Customer Portal
     </div>
     <div class="nav-item" onclick="promptLogout()" style="color:var(--red);font-size:12px;margin-top:2px">
       <div class="nav-icon" style="font-size:13px">🔒</div>Sign Out
@@ -557,7 +553,6 @@
   </div>
   <div class="settings-footer">
     <button class="settings-footer-btn" onclick="resetSettings()">Reset to Defaults</button>
-    <button class="settings-footer-btn" onclick="clearSession();window.location.href='/'">← Customer Portal</button>
   </div>
 </div>
 
@@ -738,6 +733,11 @@ function applyRoleNav() {
     const cur = document.querySelector('.page.active');
     if (cur && cur.id === 'p-mytickets-admin') nav('tickets');
   }
+  /* Update mode badge */
+  const badge = document.getElementById('role-mode-badge');
+  if (badge) {
+    badge.textContent = isAdminRole() ? '🛡️ Admin Mode' : '👤 Staff Mode';
+  }
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -747,8 +747,10 @@ let deleteRef = null;
 
 function promptDelete(ref) {
   if (!ref || !isAdminRole()) return;
-  deleteRef = ref;
-  document.getElementById('del-ref').textContent = ref;
+  /* Capture ref before closePanel resets openRef */
+  const capturedRef = ref;
+  deleteRef = capturedRef;
+  document.getElementById('del-ref').textContent = capturedRef;
   document.getElementById('delete-overlay').classList.add('open');
   closePanel();
 }
@@ -760,7 +762,8 @@ function cancelDelete() {
 
 function confirmDelete() {
   if (!deleteRef) return;
-  fetch(`${API}/complaints/${deleteRef}`, {
+  const ref = deleteRef; /* capture before any reset */
+  fetch(`${API}/complaints/${ref}`, {
     method: 'DELETE', headers: authHeaders()
   })
   .then(r => r.json())
@@ -769,8 +772,7 @@ function confirmDelete() {
     cancelDelete();
     loadTickets();
     updateBadges();
-    showToast('🗑️', `Ticket ${deleteRef} deleted`);
-    deleteRef = null;
+    showToast('🗑️', `Ticket ${ref} deleted`);
   })
   .catch(() => showToast('⚠️', 'Could not delete ticket.'));
 }
@@ -797,7 +799,7 @@ function inlineStatusChange(ref, newStatus) {
     updateBadges();
     refreshDash();
   })
-  .catch(() => showToast('⚠️', 'Could not update status.'));
+  .catch(() => { loadTickets(); updateBadges(); });
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -917,7 +919,7 @@ function staffUpdateStatus(ref, newStatus, selectEl) {
     showToast('✅', `${ref} → ${newStatus}`);
     loadMyAdminTickets();
   })
-  .catch(() => { showToast('⚠️', 'Could not update.'); selectEl.value = ticket.status; });
+  .catch(() => { selectEl.value = ticket.status; });
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -1048,6 +1050,40 @@ function switchLoginRole(role) {
   ['login-user','login-pw'].forEach(id => { const e=document.getElementById(id); if(e) e.value=''; });
   const errEl = document.getElementById('login-error');
   if (errEl) errEl.textContent = '';
+}
+
+/* ════════════════════════════════════════════════════════════
+   ADMIN TRACKING — uses /complaints/all with auth, case-insensitive
+════════════════════════════════════════════════════════════ */
+function trackLookup() {
+  const q   = (document.getElementById('track-in')?.value || '').trim();
+  const res = document.getElementById('track-results');
+  if (!q || !res) return;
+  if (!q) { res.innerHTML = ''; return; }
+
+  fetch(`${API}/complaints/all?search=${encodeURIComponent(q)}&limit=50`, { headers: authHeaders() })
+    .then(r => r.json())
+    .then(data => {
+      if (!data.ok || !data.data.length) {
+        res.innerHTML = `<p style="color:var(--txt3);text-align:center;font-size:13px;padding:16px 0">
+          No complaints found for "<strong style="color:var(--txt)">${q}</strong>"
+        </p>`;
+        return;
+      }
+      res.innerHTML = data.data.map(t => `
+        <div class="tr-item" onclick="openTicket('${t.ref_number}')" style="cursor:pointer">
+          <div>
+            <div class="tr-ref">${t.ref_number}</div>
+            <div class="tr-sub">${t.customer_name} · ${t.complaint_type} · ${fmtDate(t.submitted_date)} · Assigned: ${t.assigned_to || 'Unassigned'}</div>
+          </div>
+          <span class="pill ${pillCls(t.status)}">${t.status}</span>
+        </div>`).join('');
+    })
+    .catch(() => {
+      res.innerHTML = `<p style="color:var(--txt3);text-align:center;font-size:13px;padding:16px 0">
+        Could not load results. Make sure you are logged in.
+      </p>`;
+    });
 }
 
 /* ════════════════════════════════════════════════════════════
