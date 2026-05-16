@@ -895,8 +895,15 @@ def dashboard_stats():
     )["avg_days"]
 
     by_type = query("""
-        SELECT complaint_type, COUNT(*) AS count
-        FROM v_complaints_full GROUP BY complaint_type ORDER BY count DESC
+        SELECT
+            complaint_type,
+            COUNT(*) AS count,
+            SUM(CASE WHEN status = 'Resolved'    THEN 1 ELSE 0 END) AS resolved,
+            SUM(CASE WHEN status = 'Pending'      THEN 1 ELSE 0 END) AS pending,
+            SUM(CASE WHEN status = 'In Progress'  THEN 1 ELSE 0 END) AS in_progress
+        FROM v_complaints_full
+        GROUP BY complaint_type
+        ORDER BY count DESC
     """)
 
     by_priority = query("""
@@ -932,9 +939,54 @@ def resolution_report():
 @app.route("/api/reports/satisfaction", methods=["GET"])
 @jwt_required()
 def satisfaction_report():
-    """GET /api/reports/satisfaction — rated tickets."""
-    rows = query("SELECT * FROM v_satisfaction_ratings")
+    """GET /api/reports/satisfaction — rated tickets, filtered for staff."""
+    identity = get_jwt_identity()
+    role = identity.get("role", "")
+    if role == "Administrator":
+        rows = query("SELECT * FROM v_satisfaction_ratings")
+    else:
+        # Staff sees only tickets assigned to them
+        name = identity.get("name", "")
+        rows = query(
+            "SELECT * FROM v_satisfaction_ratings WHERE assigned_to = %s",
+            (name,)
+        )
     return ok(rows)
+
+
+@app.route("/api/reports/dashboard/staff", methods=["GET"])
+@jwt_required()
+def staff_dashboard_stats():
+    """GET /api/reports/dashboard/staff — KPIs filtered for the logged-in staff member."""
+    identity = get_jwt_identity()
+    name = identity.get("name", "")
+
+    total    = query("SELECT COUNT(*) AS n FROM v_complaints_full WHERE assigned_to=%s", (name,), fetchone=True)["n"]
+    pending  = query("SELECT COUNT(*) AS n FROM v_complaints_full WHERE assigned_to=%s AND status='Pending'", (name,), fetchone=True)["n"]
+    in_prog  = query("SELECT COUNT(*) AS n FROM v_complaints_full WHERE assigned_to=%s AND status='In Progress'", (name,), fetchone=True)["n"]
+    resolved = query("SELECT COUNT(*) AS n FROM v_complaints_full WHERE assigned_to=%s AND status='Resolved'", (name,), fetchone=True)["n"]
+
+    by_type = query("""
+        SELECT
+            complaint_type,
+            COUNT(*) AS count,
+            SUM(CASE WHEN status = 'Resolved'    THEN 1 ELSE 0 END) AS resolved,
+            SUM(CASE WHEN status = 'Pending'      THEN 1 ELSE 0 END) AS pending,
+            SUM(CASE WHEN status = 'In Progress'  THEN 1 ELSE 0 END) AS in_progress
+        FROM v_complaints_full
+        WHERE assigned_to = %s
+        GROUP BY complaint_type ORDER BY count DESC
+    """, (name,))
+
+    return ok({
+        "totals": {
+            "total": total, "pending": pending,
+            "in_progress": in_prog, "resolved": resolved,
+        },
+        "by_type": by_type,
+        "by_priority": [],
+        "staff_workload": [],
+    })
 
 
 # ══════════════════════════════════════════════════════════════

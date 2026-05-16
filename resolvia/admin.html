@@ -255,6 +255,7 @@
   <div class="nav-item" data-nav="dashboard" onclick="nav('dashboard')"><div class="nav-icon">📊</div>Dashboard<span class="nav-badge" id="nb-dash">Live</span></div>
   <span class="nav-label">Operations</span>
   <div class="nav-item" data-nav="tickets" onclick="nav('tickets')"><div class="nav-icon">🎫</div>All Tickets<span class="nav-badge" id="nb-tickets">10</span></div>
+  <div class="nav-item" data-nav="mytickets-admin" onclick="nav('mytickets-admin')"><div class="nav-icon">🎟️</div>My Tickets</div>
   <div class="nav-item" data-nav="track" onclick="nav('track')"><div class="nav-icon">🔍</div>Customer Tracking</div>
   <span class="nav-label">Analytics</span>
   <div class="nav-item" data-nav="reports" onclick="nav('reports')"><div class="nav-icon">📈</div>Basic Reports</div>
@@ -720,18 +721,24 @@ function currentStaffName() { return getSession()?.name || ''; }
    NAV — hide/show based on role
 ════════════════════════════════════════════════════════════ */
 function applyRoleNav() {
-  /* Admin only nav items */
+  /* Admin-only nav items: staff management, mark resolve */
   ['staff', 'resolve'].forEach(id => {
     const el = document.querySelector(`[data-nav="${id}"]`);
     if (el) el.style.display = isAdminRole() ? '' : 'none';
   });
+  /* All Tickets: admin only — staff use My Tickets instead */
+  const allTicketsNav = document.querySelector('[data-nav="tickets"]');
+  if (allTicketsNav) allTicketsNav.style.display = isAdminRole() ? '' : 'none';
   /* My Tickets: staff only, not admin */
   const myNav = document.querySelector('[data-nav="mytickets-admin"]');
   if (myNav) myNav.style.display = isAdminRole() ? 'none' : '';
-  /* If admin lands on mytickets-admin, redirect to tickets */
+  /* Redirect mismatched landings */
   if (isAdminRole()) {
     const cur = document.querySelector('.page.active');
     if (cur && cur.id === 'p-mytickets-admin') nav('tickets');
+  } else {
+    const cur = document.querySelector('.page.active');
+    if (cur && cur.id === 'p-tickets') nav('mytickets-admin');
   }
   /* Update mode badge */
   const badge = document.getElementById('role-mode-badge');
@@ -1084,6 +1091,136 @@ function trackLookup() {
         Could not load results. Make sure you are logged in.
       </p>`;
     });
+}
+
+/* ════════════════════════════════════════════════════════════
+   ROLE-AWARE renderReports — staff sees only their type data
+════════════════════════════════════════════════════════════ */
+function renderReports() {
+  const token = getToken();
+  if (!token) return;
+
+  const endpoint = isAdminRole()
+    ? `${API}/reports/dashboard`
+    : `${API}/reports/dashboard/staff`;
+
+  fetch(endpoint, { headers: authHeaders() })
+    .then(r => r.json())
+    .then(data => {
+      if (!data.ok) return;
+      const t  = data.data.totals;
+      const ty = data.data.by_type || [];
+
+      const total    = t.total       || 0;
+      const resolved = t.resolved    || 0;
+      const inProg   = t.in_progress || 0;
+      const pending  = t.pending     || 0;
+
+      setText('rs-total', total);
+      setText('rs-res',   resolved);
+      setText('rs-prog',  inProg);
+      setText('rs-pend',  pending);
+      setText('rs-rate',  total ? Math.round(resolved / total * 100) + '%' : '—');
+
+      const tb = document.getElementById('rpt-tbody');
+      if (tb) {
+        tb.innerHTML = ty.map(r => {
+          const res  = r.resolved || 0;
+          const pend = r.pending  || 0;
+          const rate = r.count ? Math.round(res / r.count * 100) : 0;
+          return `<tr>
+            <td style="color:var(--txt);font-weight:500">${r.complaint_type}</td>
+            <td><strong style="color:var(--txt)">${r.count}</strong></td>
+            <td><span style="color:var(--green);font-weight:600">${res}</span></td>
+            <td><span style="color:var(--yellow);font-weight:600">${pend}</span></td>
+            <td>
+              <div class="progress-bar-wrap">
+                <div class="progress-bar">
+                  <div class="progress-bar-fill" style="width:${rate}%;background:var(--green)"></div>
+                </div>
+                <span style="font-size:11px;font-weight:700;color:var(--txt2);min-width:32px">${rate}%</span>
+              </div>
+            </td>
+          </tr>`;
+        }).join('');
+      }
+
+      const tbars = document.getElementById('type-bars');
+      if (tbars) {
+        tbars.innerHTML = ty.map(r => `
+          <div style="display:flex;flex-direction:column;gap:3px">
+            <div style="display:flex;justify-content:space-between;font-size:11px">
+              <span style="color:var(--txt2)">${r.complaint_type}</span>
+              <span style="color:var(--txt);font-weight:700">${r.count}</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-bar-fill"
+                style="width:${Math.round(r.count / Math.max(total,1) * 100)}%;background:var(--accent)">
+              </div>
+            </div>
+          </div>`).join('');
+      }
+    })
+    .catch(() => {});
+}
+
+/* ════════════════════════════════════════════════════════════
+   ROLE-AWARE renderRatingsPage — staff sees only their tickets
+════════════════════════════════════════════════════════════ */
+function renderRatingsPage() {
+  const token = getToken();
+  if (!token) return;
+
+  fetch(`${API}/reports/satisfaction`, { headers: authHeaders() })
+    .then(r => r.json())
+    .then(data => {
+      if (!data.ok) return;
+      const rated = data.data;
+
+      const avgEl  = document.getElementById('avg-rating');
+      const cntEl  = document.getElementById('rated-count');
+      const barsEl = document.getElementById('rating-bars');
+      const tbody  = document.getElementById('ratings-tbody');
+
+      const avg = rated.length
+        ? (rated.reduce((s, t) => s + (t.satisfaction_rating || 0), 0) / rated.length).toFixed(1)
+        : '—';
+
+      if (avgEl) avgEl.textContent = avg !== '—' ? `${avg} ⭐` : '—';
+      if (cntEl) cntEl.textContent = `${rated.length} rating${rated.length !== 1 ? 's' : ''} received`;
+
+      if (barsEl) {
+        const dist = [5,4,3,2,1].map(s => ({
+          s, count: rated.filter(t => t.satisfaction_rating === s).length
+        }));
+        barsEl.innerHTML = dist.map(d => {
+          const pct = rated.length ? Math.round(d.count / rated.length * 100) : 0;
+          return `<div style="display:flex;align-items:center;gap:8px;font-size:12px">
+            <span style="width:14px;color:var(--txt3);text-align:right">${d.s}★</span>
+            <div class="progress-bar" style="flex:1">
+              <div class="progress-bar-fill" style="width:${pct}%;background:#f59e0b"></div>
+            </div>
+            <span style="width:22px;color:var(--txt2);font-weight:600">${d.count}</span>
+          </div>`;
+        }).join('');
+      }
+
+      if (tbody) {
+        tbody.innerHTML = rated.length === 0
+          ? `<tr><td colspan="5" style="text-align:center;color:var(--txt3);padding:36px">No ratings yet.</td></tr>`
+          : rated.map(t => `
+            <tr>
+              <td><span class="ref-id" onclick="openTicket('${t.ref_number}')">${t.ref_number}</span></td>
+              <td style="color:var(--txt);font-weight:500">${t.customer_name}</td>
+              <td>${t.complaint_type}</td>
+              <td>${t.assigned_to || '—'}</td>
+              <td><span style="font-size:16px">${'⭐'.repeat(t.satisfaction_rating)}</span>
+                  <span style="font-size:11px;color:var(--txt3);margin-left:6px">${t.satisfaction_rating}/5</span>
+              </td>
+            </tr>`).join('');
+      }
+    })
+    .catch(() => {});
 }
 
 /* ════════════════════════════════════════════════════════════

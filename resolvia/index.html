@@ -583,7 +583,7 @@ function openTicket(ref) {
 }
 
 /* ════════════════════════════════════════════════════════════
-   CUSTOMER loadTickets — shows only current customer's tickets
+   CUSTOMER loadTickets — All Tickets (public read-only view)
 ════════════════════════════════════════════════════════════ */
 function loadTickets() {
   const token = getToken();
@@ -594,7 +594,7 @@ function loadTickets() {
   const priority = document.getElementById('f-priority')?.value || '';
   const search   = document.getElementById('f-search')?.value   || '';
 
-  let url = `${API}/complaints/mine?limit=200`;
+  let url = `${API}/complaints/all?limit=200`;
   if (status)   url += `&status=${encodeURIComponent(status)}`;
   if (type)     url += `&type=${encodeURIComponent(type)}`;
   if (priority) url += `&priority=${encodeURIComponent(priority)}`;

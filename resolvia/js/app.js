@@ -692,18 +692,20 @@ function renderReports() {
       const tb = document.getElementById('rpt-tbody');
       if (tb) {
         tb.innerHTML = ty.map(r => {
-          const pct = r.count && total ? Math.round(r.count / total * 100) : 0;
+          const res  = r.resolved    || 0;
+          const pend = r.pending     || 0;
+          const rate = r.count ? Math.round(res / r.count * 100) : 0;
           return `<tr>
             <td style="color:var(--txt);font-weight:500">${r.complaint_type}</td>
             <td><strong style="color:var(--txt)">${r.count}</strong></td>
-            <td>—</td>
-            <td>—</td>
+            <td><span style="color:var(--green);font-weight:600">${res}</span></td>
+            <td><span style="color:var(--yellow);font-weight:600">${pend}</span></td>
             <td>
               <div class="progress-bar-wrap">
                 <div class="progress-bar">
-                  <div class="progress-bar-fill" style="width:${pct}%"></div>
+                  <div class="progress-bar-fill" style="width:${rate}%;background:var(--green)"></div>
                 </div>
-                <span style="font-size:11px;font-weight:700;color:var(--txt2);min-width:32px">${pct}%</span>
+                <span style="font-size:11px;font-weight:700;color:var(--txt2);min-width:32px">${rate}%</span>
               </div>
             </td>
           </tr>`;
