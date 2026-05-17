@@ -1058,6 +1058,10 @@ def serve_index():
 def serve_admin():
     return send_from_directory("..", "admin.html")
 
+@app.route("/staff")
+def serve_staff():
+    return send_from_directory("..", "staff.html")
+
 @app.route("/html/<path:filename>")
 def serve_html(filename):
     return send_from_directory("../html", filename)
@@ -1081,4 +1085,5 @@ if __name__ == "__main__":
     debug = os.getenv("FLASK_ENV", "development") == "development"
     print(f"🚀  Resolvia API running on http://localhost:{port}")
     print(f"🛡️  Admin portal running on http://localhost:{port}/admin")
+    print(f"👤  Staff portal running on http://localhost:{port}/staff")
     app.run(host="0.0.0.0", port=port, debug=debug)
