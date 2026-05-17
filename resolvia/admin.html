@@ -165,8 +165,7 @@
     </div>
 
     <div class="auth-footer">
-      Demo: <strong>admin</strong> / <strong>Admin@2025</strong> &nbsp;·&nbsp;
-      
+      Demo: <strong>admin</strong> / <strong>Admin@2025</strong>
     </div>
   </div>
 </div>
@@ -225,7 +224,7 @@
     </div>
   </div>
   <div class="topbar-right">
-    <span class="admin-badge" id="role-mode-badge">🛡️ Admin Mode</span>
+    <span class="admin-badge">🛡️ Admin Mode</span>
     <div class="tb-btn" id="btn-notif" onclick="toggleNotifPanel()" title="Notifications" style="position:relative">
       <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
       <span class="notif-count" id="notif-count"></span>
@@ -255,7 +254,6 @@
   <div class="nav-item" data-nav="dashboard" onclick="nav('dashboard')"><div class="nav-icon">📊</div>Dashboard<span class="nav-badge" id="nb-dash">Live</span></div>
   <span class="nav-label">Operations</span>
   <div class="nav-item" data-nav="tickets" onclick="nav('tickets')"><div class="nav-icon">🎫</div>All Tickets<span class="nav-badge" id="nb-tickets">10</span></div>
-  <div class="nav-item" data-nav="mytickets-admin" onclick="nav('mytickets-admin')"><div class="nav-icon">🎟️</div>My Tickets</div>
   <div class="nav-item" data-nav="track" onclick="nav('track')"><div class="nav-icon">🔍</div>Customer Tracking</div>
   <span class="nav-label">Analytics</span>
   <div class="nav-item" data-nav="reports" onclick="nav('reports')"><div class="nav-icon">📈</div>Basic Reports</div>
@@ -267,8 +265,6 @@
     <div class="nav-item" style="cursor:default">
       <div style="width:30px;height:30px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;flex-shrink:0" id="sb-av">AD</div>
       <div><div style="font-size:12px;font-weight:600;color:var(--txt)" id="sb-name">Admin User</div><div style="font-size:11px;color:var(--txt3)" id="sb-role">Administrator</div></div>
-    </div>
-    <div class="nav-item" onclick="clearSession();window.location.href='/'" style="color:var(--txt3);font-size:12px;margin-top:2px">
     </div>
     <div class="nav-item" onclick="promptLogout()" style="color:var(--red);font-size:12px;margin-top:2px">
       <div class="nav-icon" style="font-size:13px">🔒</div>Sign Out
@@ -333,25 +329,6 @@
         <button class="btn btn-primary" onclick="trackLookup()">Search</button>
       </div>
       <div class="track-results" id="track-results"></div>
-    </div>
-  </div>
-
-  <!-- ── My Admin Tickets (staff only) ── -->
-  <div class="page" id="p-mytickets-admin">
-    <div class="ph">
-      <div class="ph-left">
-        <div class="ph-title">My Tickets</div>
-        <div class="ph-sub" id="my-admin-count">Loading...</div>
-      </div>
-    </div>
-    <div class="card" style="padding:0;overflow:hidden">
-      <div style="padding:14px 16px;border-bottom:1.5px solid var(--border);font-family:var(--fd);font-size:13px;font-weight:700;background:var(--surface2)">
-        Complaints Assigned to You
-      </div>
-      <div class="tbl-wrap"><table>
-        <thead><tr><th>Ref #</th><th>Date</th><th>Customer</th><th>Type</th><th>Priority</th><th>Status</th></tr></thead>
-        <tbody id="my-admin-tkt-tbody"></tbody>
-      </table></div>
     </div>
   </div>
 
@@ -721,30 +698,7 @@ function currentStaffName() { return getSession()?.name || ''; }
    NAV — hide/show based on role
 ════════════════════════════════════════════════════════════ */
 function applyRoleNav() {
-  /* Admin-only nav items: staff management, mark resolve */
-  ['staff', 'resolve'].forEach(id => {
-    const el = document.querySelector(`[data-nav="${id}"]`);
-    if (el) el.style.display = isAdminRole() ? '' : 'none';
-  });
-  /* All Tickets: admin only — staff use My Tickets instead */
-  const allTicketsNav = document.querySelector('[data-nav="tickets"]');
-  if (allTicketsNav) allTicketsNav.style.display = isAdminRole() ? '' : 'none';
-  /* My Tickets: staff only, not admin */
-  const myNav = document.querySelector('[data-nav="mytickets-admin"]');
-  if (myNav) myNav.style.display = isAdminRole() ? 'none' : '';
-  /* Redirect mismatched landings */
-  if (isAdminRole()) {
-    const cur = document.querySelector('.page.active');
-    if (cur && cur.id === 'p-mytickets-admin') nav('tickets');
-  } else {
-    const cur = document.querySelector('.page.active');
-    if (cur && cur.id === 'p-tickets') nav('mytickets-admin');
-  }
-  /* Update mode badge */
-  const badge = document.getElementById('role-mode-badge');
-  if (badge) {
-    badge.textContent = isAdminRole() ? '🛡️ Admin Mode' : '👤 Staff Mode';
-  }
+  /* This portal is admin-only. All nav items are always visible. */
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -754,10 +708,8 @@ let deleteRef = null;
 
 function promptDelete(ref) {
   if (!ref || !isAdminRole()) return;
-  /* Capture ref before closePanel resets openRef */
-  const capturedRef = ref;
-  deleteRef = capturedRef;
-  document.getElementById('del-ref').textContent = capturedRef;
+  deleteRef = ref;
+  document.getElementById('del-ref').textContent = ref;
   document.getElementById('delete-overlay').classList.add('open');
   closePanel();
 }
@@ -769,7 +721,7 @@ function cancelDelete() {
 
 function confirmDelete() {
   if (!deleteRef) return;
-  const ref = deleteRef; /* capture before any reset */
+  const ref = deleteRef;
   fetch(`${API}/complaints/${ref}`, {
     method: 'DELETE', headers: authHeaders()
   })
@@ -806,7 +758,7 @@ function inlineStatusChange(ref, newStatus) {
     updateBadges();
     refreshDash();
   })
-  .catch(() => { loadTickets(); updateBadges(); });
+  .catch(() => showToast('⚠️', 'Could not update status.'));
 }
 
 /* ════════════════════════════════════════════════════════════
@@ -849,85 +801,7 @@ function renderTickets() {
   renderPag();
 }
 
-/* ════════════════════════════════════════════════════════════
-   MY TICKETS (staff only) — tickets assigned to this staff
-════════════════════════════════════════════════════════════ */
-let myAdminDB = [];
 
-function loadMyAdminTickets() {
-  const name = currentStaffName();
-  fetch(`${API}/complaints/all?limit=200`, { headers: authHeaders() })
-    .then(r => r.json())
-    .then(data => {
-      if (!data.ok) return;
-      /* Filter only tickets assigned to this staff member */
-      myAdminDB = data.data.filter(t => t.assigned_to === name);
-      renderMyAdminTickets();
-    })
-    .catch(() => showToast('⚠️', 'Could not load your tickets.'));
-}
-
-function renderMyAdminTickets() {
-  const tb = document.getElementById('my-admin-tkt-tbody');
-  if (!tb) return;
-
-  setText('my-admin-count', `${myAdminDB.length} ticket${myAdminDB.length !== 1 ? 's' : ''} assigned to you`);
-
-  if (myAdminDB.length === 0) {
-    tb.innerHTML = `<tr><td colspan="6" style="text-align:center;color:var(--txt3);padding:36px">No tickets assigned to you yet.</td></tr>`;
-    return;
-  }
-
-  tb.innerHTML = myAdminDB.map(t => `
-    <tr>
-      <td><span class="ref-id" onclick="openTicket('${t.ref_number}')">${t.ref_number}</span></td>
-      <td>${fmtDate(t.submitted_date)}</td>
-      <td style="color:var(--txt);font-weight:500">${t.customer_name}</td>
-      <td>${t.complaint_type}</td>
-      <td><span class="pill pri-pill ${priorityCls(t.priority)}">${priorityIcon(t.priority)} ${t.priority||'Medium'}</span></td>
-      <td>
-        <select class="status-select" onchange="staffUpdateStatus('${t.ref_number}', this.value, this)">
-          <option ${t.status==='Pending'?'selected':''}>Pending</option>
-          <option ${t.status==='In Progress'?'selected':''}>In Progress</option>
-          <option ${t.status==='Resolved'?'selected':''}>Resolved</option>
-        </select>
-      </td>
-    </tr>`).join('');
-}
-
-function staffUpdateStatus(ref, newStatus, selectEl) {
-  /* Staff transition enforcement: Pending→In Progress→Resolved only, no going back */
-  const ticket = myAdminDB.find(t => t.ref_number === ref);
-  if (!ticket) return;
-
-  const order = ['Pending', 'In Progress', 'Resolved'];
-  const curIdx = order.indexOf(ticket.status);
-  const newIdx = order.indexOf(newStatus);
-
-  if (newIdx <= curIdx) {
-    showToast('⚠️', `Cannot move from "${ticket.status}" to "${newStatus}"`);
-    selectEl.value = ticket.status; /* reset */
-    return;
-  }
-  if (newIdx - curIdx > 1) {
-    showToast('⚠️', `Cannot skip steps. Move to "${order[curIdx + 1]}" first.`);
-    selectEl.value = ticket.status; /* reset */
-    return;
-  }
-
-  fetch(`${API}/complaints/${ref}`, {
-    method: 'PUT',
-    headers: authHeaders(),
-    body: JSON.stringify({ status: newStatus })
-  })
-  .then(r => r.json())
-  .then(data => {
-    if (!data.ok) { showToast('⚠️', data.message || 'Update failed.'); selectEl.value = ticket.status; return; }
-    showToast('✅', `${ref} → ${newStatus}`);
-    loadMyAdminTickets();
-  })
-  .catch(() => { selectEl.value = ticket.status; });
-}
 
 /* ════════════════════════════════════════════════════════════
    FEEDBACK — admin sees all, staff sees only assigned to them
@@ -1028,7 +902,6 @@ const _origNav = nav;
 nav = function(id) {
   _origNav(id);
   if (id === 'feedback')        loadFeedback();
-  if (id === 'mytickets-admin') loadMyAdminTickets();
 };
 
 /* ════════════════════════════════════════════════════════════
@@ -1060,12 +933,12 @@ function switchLoginRole(role) {
 }
 
 /* ════════════════════════════════════════════════════════════
-   ADMIN TRACKING — uses /complaints/all with auth, case-insensitive
+   CUSTOMER TRACKING — uses /complaints/all with auth
 ════════════════════════════════════════════════════════════ */
 function trackLookup() {
   const q   = (document.getElementById('track-in')?.value || '').trim();
   const res = document.getElementById('track-results');
-  if (!q || !res) return;
+  if (!res) return;
   if (!q) { res.innerHTML = ''; return; }
 
   fetch(`${API}/complaints/all?search=${encodeURIComponent(q)}&limit=50`, { headers: authHeaders() })
@@ -1087,24 +960,18 @@ function trackLookup() {
         </div>`).join('');
     })
     .catch(() => {
-      res.innerHTML = `<p style="color:var(--txt3);text-align:center;font-size:13px;padding:16px 0">
-        Could not load results. Make sure you are logged in.
-      </p>`;
+      res.innerHTML = '<p style="color:var(--txt3);text-align:center;font-size:13px;padding:16px 0">Could not connect to server.</p>';
     });
 }
 
 /* ════════════════════════════════════════════════════════════
-   ROLE-AWARE renderReports — staff sees only their type data
+   REPORTS — admin sees all data with resolved/pending columns
 ════════════════════════════════════════════════════════════ */
 function renderReports() {
   const token = getToken();
   if (!token) return;
 
-  const endpoint = isAdminRole()
-    ? `${API}/reports/dashboard`
-    : `${API}/reports/dashboard/staff`;
-
-  fetch(endpoint, { headers: authHeaders() })
+  fetch(`${API}/reports/dashboard`, { headers: authHeaders() })
     .then(r => r.json())
     .then(data => {
       if (!data.ok) return;
@@ -1125,12 +992,13 @@ function renderReports() {
       const tb = document.getElementById('rpt-tbody');
       if (tb) {
         tb.innerHTML = ty.map(r => {
+          const cnt  = r.count    || 0;
           const res  = r.resolved || 0;
           const pend = r.pending  || 0;
-          const rate = r.count ? Math.round(res / r.count * 100) : 0;
+          const rate = cnt ? Math.round(res / cnt * 100) : 0;
           return `<tr>
             <td style="color:var(--txt);font-weight:500">${r.complaint_type}</td>
-            <td><strong style="color:var(--txt)">${r.count}</strong></td>
+            <td><strong style="color:var(--txt)">${cnt}</strong></td>
             <td><span style="color:var(--green);font-weight:600">${res}</span></td>
             <td><span style="color:var(--yellow);font-weight:600">${pend}</span></td>
             <td>
@@ -1155,69 +1023,10 @@ function renderReports() {
             </div>
             <div class="progress-bar">
               <div class="progress-bar-fill"
-                style="width:${Math.round(r.count / Math.max(total,1) * 100)}%;background:var(--accent)">
+                style="width:${total ? Math.round((r.count||0)/total*100) : 0}%;background:var(--accent)">
               </div>
             </div>
           </div>`).join('');
-      }
-    })
-    .catch(() => {});
-}
-
-/* ════════════════════════════════════════════════════════════
-   ROLE-AWARE renderRatingsPage — staff sees only their tickets
-════════════════════════════════════════════════════════════ */
-function renderRatingsPage() {
-  const token = getToken();
-  if (!token) return;
-
-  fetch(`${API}/reports/satisfaction`, { headers: authHeaders() })
-    .then(r => r.json())
-    .then(data => {
-      if (!data.ok) return;
-      const rated = data.data;
-
-      const avgEl  = document.getElementById('avg-rating');
-      const cntEl  = document.getElementById('rated-count');
-      const barsEl = document.getElementById('rating-bars');
-      const tbody  = document.getElementById('ratings-tbody');
-
-      const avg = rated.length
-        ? (rated.reduce((s, t) => s + (t.satisfaction_rating || 0), 0) / rated.length).toFixed(1)
-        : '—';
-
-      if (avgEl) avgEl.textContent = avg !== '—' ? `${avg} ⭐` : '—';
-      if (cntEl) cntEl.textContent = `${rated.length} rating${rated.length !== 1 ? 's' : ''} received`;
-
-      if (barsEl) {
-        const dist = [5,4,3,2,1].map(s => ({
-          s, count: rated.filter(t => t.satisfaction_rating === s).length
-        }));
-        barsEl.innerHTML = dist.map(d => {
-          const pct = rated.length ? Math.round(d.count / rated.length * 100) : 0;
-          return `<div style="display:flex;align-items:center;gap:8px;font-size:12px">
-            <span style="width:14px;color:var(--txt3);text-align:right">${d.s}★</span>
-            <div class="progress-bar" style="flex:1">
-              <div class="progress-bar-fill" style="width:${pct}%;background:#f59e0b"></div>
-            </div>
-            <span style="width:22px;color:var(--txt2);font-weight:600">${d.count}</span>
-          </div>`;
-        }).join('');
-      }
-
-      if (tbody) {
-        tbody.innerHTML = rated.length === 0
-          ? `<tr><td colspan="5" style="text-align:center;color:var(--txt3);padding:36px">No ratings yet.</td></tr>`
-          : rated.map(t => `
-            <tr>
-              <td><span class="ref-id" onclick="openTicket('${t.ref_number}')">${t.ref_number}</span></td>
-              <td style="color:var(--txt);font-weight:500">${t.customer_name}</td>
-              <td>${t.complaint_type}</td>
-              <td>${t.assigned_to || '—'}</td>
-              <td><span style="font-size:16px">${'⭐'.repeat(t.satisfaction_rating)}</span>
-                  <span style="font-size:11px;color:var(--txt3);margin-left:6px">${t.satisfaction_rating}/5</span>
-              </td>
-            </tr>`).join('');
       }
     })
     .catch(() => {});
@@ -1231,7 +1040,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initNotifications();
   initAuth('admin');
   updateTopbarUser();
-  applyRoleNav();
   if (isLoggedIn()) setTimeout(() => nav('dashboard'), 100);
 });
 </script>
