@@ -79,12 +79,6 @@
     </div>
 
     <div class="auth-body">
-      <!-- Tab switcher -->
-      <div class="auth-tabs">
-        <div class="auth-tab active" id="a-tab-login"    onclick="switchAuthTab('login','a')">Admin Sign In</div>
-        <div class="auth-tab"        id="a-tab-register" onclick="switchAuthTab('register','a')">Add Admin Account</div>
-      </div>
-
       <!-- ── ADMIN LOGIN PANEL ── -->
       <div class="auth-panel active" id="a-login-panel">
         <div class="auth-error" id="login-error"></div>
@@ -111,61 +105,10 @@
         <button class="auth-btn" onclick="adminLogin()">Sign In to Admin →</button>
       </div>
 
-      <!-- ── ADD ADMIN ACCOUNT PANEL ── -->
-      <div class="auth-panel" id="a-register-panel">
-        <div style="background:var(--blue-bg);border:1.5px solid rgba(29,78,216,.18);border-radius:var(--r2);padding:10px 14px;font-size:12px;color:var(--blue);font-weight:500;margin-bottom:14px">
-          🛡️ Create a new admin or staff account. They can sign in here at the Admin Portal.
-        </div>
-        <div class="auth-error"   id="areg-error"></div>
-        <div class="auth-success" id="areg-success"></div>
-        <div class="auth-row">
-          <div class="auth-fg">
-            <label class="auth-fl">Full Name *</label>
-            <input id="areg-name" class="auth-input" type="text" placeholder="Admin full name">
-          </div>
-          <div class="auth-fg">
-            <label class="auth-fl">Email Address *</label>
-            <input id="areg-email" class="auth-input" type="email" placeholder="admin@example.com">
-          </div>
-        </div>
-        <div class="auth-fg">
-          <label class="auth-fl">Username *</label>
-          <input id="areg-user" class="auth-input" type="text" placeholder="Choose a username (min 3 chars)">
-        </div>
-        <div class="auth-fg">
-          <label class="auth-fl">Role *</label>
-          <select id="areg-role" class="auth-input" style="padding:10px 12px;cursor:pointer">
-            <option value="Administrator">🛡️ Administrator</option>
-            <option value="Finance Specialist">💰 Finance Specialist</option>
-            <option value="Tech Support">🔧 Tech Support</option>
-            <option value="Customer Success">🤝 Customer Success</option>
-            <option value="Quality Team">⭐ Quality Team</option>
-          </select>
-        </div>
-        <div class="auth-fg">
-          <label class="auth-fl">Password *</label>
-          <div class="auth-input-wrap">
-            <input id="areg-pw" class="auth-input" type="password" placeholder="Min 8 characters"
-              oninput="updateStrengthUI(this.value,'arpw-bar','arpw-lbl','arpw-hint')">
-            <button class="auth-eye" id="areg-eye" onclick="togglePwVisibility('areg-pw','areg-eye')" type="button">
-              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-            </button>
-          </div>
-          <div class="pw-strength-wrap">
-            <div class="pw-strength-bar" id="arpw-bar"><div class="pw-seg"></div><div class="pw-seg"></div><div class="pw-seg"></div><div class="pw-seg"></div></div>
-            <div style="display:flex;justify-content:space-between"><span class="pw-label" id="arpw-lbl"></span><span class="pw-hint" id="arpw-hint"></span></div>
-          </div>
-        </div>
-        <div class="auth-fg">
-          <label class="auth-fl">Confirm Password *</label>
-          <input id="areg-pw-confirm" class="auth-input" type="password" placeholder="Re-enter password" onkeydown="authEnter(event,adminRegister)">
-        </div>
-        <button class="auth-btn" onclick="adminRegister()">Create Admin Account →</button>
-      </div>
     </div>
 
     <div class="auth-footer">
-      Demo: <strong>admin</strong> / <strong>Admin@2025</strong>
+      Staff Portal? <a href="staff.html">Staff Login →</a>
     </div>
   </div>
 </div>
@@ -385,7 +328,6 @@
     <div class="ph">
       <div class="ph-left"><div class="ph-title">Staff Management</div><div class="ph-sub">Admin-only · Manage your resolution team · Auto-assigns to least loaded staff</div></div>
       <div class="ph-right">
-        <button class="btn btn-ghost btn-sm" onclick="openAddAdminModal()" style="margin-right:6px">＋ Add Admin Account</button>
         <button class="btn btn-primary btn-sm" onclick="openAddStaffModal()">＋ Add Staff</button>
       </div>
     </div>
@@ -749,8 +691,7 @@ function inlineStatusChange(ref, newStatus) {
   .then(r => r.json())
   .then(data => {
     if (!data.ok) {
-      showToast('⚠️', data.message || 'Update failed.');
-      loadTickets(); /* reset dropdown */
+      loadTickets(); /* silently reset dropdown */
       return;
     }
     showToast('✏️', `${ref} → ${newStatus}`);

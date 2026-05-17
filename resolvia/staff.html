@@ -76,7 +76,7 @@
     </div>
 
     <div class="auth-footer">
-      Administrator? <a href="admin.html">Admin Portal →</a>
+      Customer Portal? <a href="/">Customer Login →</a>
     </div>
   </div>
 </div>
@@ -356,10 +356,10 @@
 <div class="toast" id="toast"><div class="toast-ic" id="t-ic">✅</div><div class="toast-tx" id="t-tx">Done</div></div>
 
 <!-- ════ SCRIPTS ════ -->
-<script src="js/app.js?v=2"></script>
-<script src="js/auth.js"></script>
-<script src="js/notifications.js"></script>
-<script src="js/settings.js"></script>
+<script src="js/app.js?v=3"></script>
+<script src="js/auth.js?v=3"></script>
+<script src="js/notifications.js?v=3"></script>
+<script src="js/settings.js?v=3"></script>
 <script>
 'use strict';
 
@@ -439,11 +439,11 @@ function staffLogin() {
       return;
     }
 
-    /* Save session */
+    /* Save session — populate both sessionStorage AND in-memory SESSION */
+    const sessionData = { name: data.name, role: data.role, username: user, mode: 'admin' };
     sessionStorage.setItem('rv_token', data.token);
-    sessionStorage.setItem('rv_session', JSON.stringify({
-      name: data.name, role: data.role, username: data.username
-    }));
+    sessionStorage.setItem('rv_session', JSON.stringify(sessionData));
+    if (typeof saveSession === 'function') saveSession(sessionData, 'admin');
 
     staffBootApp();
   })
@@ -1056,8 +1056,9 @@ function confirmLogout() {
    BOOT
 ════════════════════════════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', () => {
-  initSettings();
-  initNotifications();
+  if (typeof initSettings      === 'function') initSettings();
+  if (typeof initNotifications === 'function') initNotifications();
+  if (typeof loadSession       === 'function') loadSession();
 
   /* Check if already logged in */
   const token = getToken();

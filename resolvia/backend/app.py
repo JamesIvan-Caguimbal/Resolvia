@@ -180,10 +180,11 @@ def login():
 
     token = create_access_token(identity=str(identity["id"]), additional_claims=identity)
     return ok({
-        "token": token,
-        "name":  identity["name"],
-        "role":  identity["role"],
-        "mode":  identity["mode"]
+        "token":    token,
+        "name":     identity["name"],
+        "role":     identity["role"],
+        "mode":     identity["mode"],
+        "username": identity["username"]
     })
 
 
@@ -223,7 +224,7 @@ def register():
 @jwt_required()
 def me():
     """Return current logged-in user info."""
-    return ok(get_jwt_identity())
+    return ok(get_jwt())
 
 
 # ══════════════════════════════════════════════════════════════
@@ -238,7 +239,7 @@ def list_complaints():
     Query params: status, type, priority, search, limit, offset
     Customers only see their own tickets.
     """
-    identity = get_jwt_identity()
+    identity = get_jwt()
     params   = request.args
 
     where_clauses = []
@@ -454,7 +455,7 @@ def update_complaint(ref):
     PUT /api/complaints/<ref> — update status, priority, notes, assigned staff.
     Admin/staff only.
     """
-    identity = get_jwt_identity()
+    identity = get_jwt()
     if identity["mode"] != "admin":
         return err("Admin access required.", 403)
 
@@ -580,7 +581,7 @@ def rate_complaint(ref):
 @jwt_required()
 def delete_complaint(ref):
     """DELETE /api/complaints/<ref> — admin only."""
-    identity = get_jwt_identity()
+    identity = get_jwt()
     if identity["mode"] != "admin":
         return err("Admin access required.", 403)
 
@@ -652,7 +653,7 @@ def get_staff(staff_id):
 @jwt_required()
 def create_staff():
     """POST /api/staff — create a new staff member (admin only)."""
-    identity = get_jwt_identity()
+    identity = get_jwt()
     if identity["mode"] != "admin":
         return err("Admin access required.", 403)
 
@@ -683,7 +684,7 @@ def create_staff():
 @jwt_required()
 def create_admin_account():
     """POST /api/admin/accounts — create a new admin or staff account (admin only)."""
-    identity = get_jwt_identity()
+    identity = get_jwt()
     if identity["mode"] != "admin" or identity["role"] != "Administrator":
         return err("Administrator access required.", 403)
 
@@ -717,7 +718,7 @@ def create_admin_account():
 @jwt_required()
 def update_staff(staff_id):
     """PUT /api/staff/<id> — update staff (admin only)."""
-    identity = get_jwt_identity()
+    identity = get_jwt()
     if identity["mode"] != "admin":
         return err("Admin access required.", 403)
 
@@ -750,7 +751,7 @@ def update_staff(staff_id):
 @jwt_required()
 def delete_staff(staff_id):
     """DELETE /api/staff/<id> — admin only."""
-    identity = get_jwt_identity()
+    identity = get_jwt()
     if identity["mode"] != "admin":
         return err("Admin access required.", 403)
 
@@ -815,7 +816,7 @@ def list_feedback():
 @jwt_required()
 def submit_feedback():
     """POST /api/feedback — customer submits feedback."""
-    identity = get_jwt_identity()
+    identity = get_jwt()
     if identity["mode"] != "customer":
         return err("Customer account required.", 403)
 
@@ -853,7 +854,7 @@ def submit_feedback():
 @jwt_required()
 def reply_feedback(fid):
     """POST /api/feedback/<id>/reply — staff replies to feedback."""
-    identity = get_jwt_identity()
+    identity = get_jwt()
     if identity["mode"] != "admin":
         return err("Admin access required.", 403)
 
@@ -940,7 +941,7 @@ def resolution_report():
 @jwt_required()
 def satisfaction_report():
     """GET /api/reports/satisfaction — rated tickets, filtered for staff."""
-    identity = get_jwt_identity()
+    identity = get_jwt()
     role = identity.get("role", "")
     if role == "Administrator":
         rows = query("SELECT * FROM v_satisfaction_ratings")
@@ -958,7 +959,7 @@ def satisfaction_report():
 @jwt_required()
 def staff_dashboard_stats():
     """GET /api/reports/dashboard/staff — KPIs filtered for the logged-in staff member."""
-    identity = get_jwt_identity()
+    identity = get_jwt()
     name = identity.get("name", "")
 
     total    = query("SELECT COUNT(*) AS n FROM v_complaints_full WHERE assigned_to=%s", (name,), fetchone=True)["n"]
@@ -997,7 +998,7 @@ def staff_dashboard_stats():
 @jwt_required()
 def list_notifications():
     """GET /api/notifications — fetch notifications for the current user."""
-    identity = get_jwt_identity()
+    identity = get_jwt()
     rows     = query(
         "SELECT * FROM notification_log WHERE username=%s ORDER BY created_at DESC LIMIT 50",
         (identity["username"],)
@@ -1011,7 +1012,7 @@ def list_notifications():
 @jwt_required()
 def mark_notification_read(nid):
     """POST /api/notifications/<id>/read — mark a notification as read."""
-    identity = get_jwt_identity()
+    identity = get_jwt()
     query(
         "UPDATE notification_log SET is_read=TRUE WHERE notif_id=%s AND username=%s",
         (nid, identity["username"]), commit=True
@@ -1023,7 +1024,7 @@ def mark_notification_read(nid):
 @jwt_required()
 def mark_all_read():
     """POST /api/notifications/read-all — mark all notifications as read."""
-    identity = get_jwt_identity()
+    identity = get_jwt()
     query(
         "UPDATE notification_log SET is_read=TRUE WHERE username=%s",
         (identity["username"],), commit=True

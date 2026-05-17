@@ -350,7 +350,7 @@ function updateStatus(status) {
   })
   .then(r => r.json())
   .then(data => {
-    if (!data.ok) { showToast('⚠️', data.message || 'Update failed.'); return; }
+    if (!data.ok) { /* silently reload to reset UI */ loadTickets(); return; }
     document.getElementById('pn-status-disp').innerHTML =
       `<span class="pill ${pillCls(status)}">${status}</span>`;
     document.querySelectorAll('.sbt').forEach(b =>
@@ -744,7 +744,7 @@ function renderRatingsPage() {
     .then(r => r.json())
     .then(data => {
       if (!data.ok) return;
-      const rated = data.data;
+      const rated = data.data; /* all ratings — no filtering */  /* all ratings — no filtering */
 
       const avgEl  = document.getElementById('avg-rating');
       const cntEl  = document.getElementById('rated-count');
