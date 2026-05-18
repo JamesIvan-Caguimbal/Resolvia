@@ -139,6 +139,10 @@
     </div>
   </div>
   <div class="topbar-right">
+    <div class="tb-btn" id="btn-notif" onclick="toggleNotifPanel()" title="Notifications" style="position:relative">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <span class="notif-count" id="notif-count"></span>
+    </div>
     <div class="tb-btn" id="btn-settings" onclick="toggleSettingsPanel()" title="Settings">
       <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     </div>
@@ -496,13 +500,13 @@
   </div>
 </aside>
 
-<!-- NOTIFICATIONS PANEL -->
-<div class="notif-actions"><span class="notif-mark-all" onclick="markAllNotifsRead()">Mark all read</span></div></div>
+<!-- SETTINGS PANEL -->
+<div class="notif-panel" id="notif-panel">
+  <div class="notif-hd"><div class="notif-title">Notifications</div><div class="notif-actions"><span class="notif-mark-all" onclick="markAllNotifsRead()">Mark all read</span></div></div>
   <div class="notif-list" id="notif-list"></div>
-  <div class="notif-footer"><span class="notif-view-all" onclick="showToast('📋','View all — coming soon')">View all notifications</span></div>
+  <div class="notif-footer"><span class="notif-view-all" onclick="markAllNotifsRead()">Mark all read</span></div>
 </div>
 
-<!-- SETTINGS PANEL -->
 <div class="settings-panel" id="settings-panel">
   <div class="settings-hd"><div class="settings-title">Settings</div><div class="settings-sub">Personalize your Resolvia experience</div></div>
   <div class="settings-body">
@@ -521,6 +525,7 @@
 
 <script src="js/app.js?v=2"></script>
 <script src="js/auth.js"></script>
+<script src="js/notifications.js"></script>
 <script src="js/settings.js"></script>
 <script>
 'use strict';
@@ -723,12 +728,28 @@ function renderUserFeedbacks(feedbacks) {
       </div>
       <div style="font-size:13px;color:var(--txt2);line-height:1.6;padding:10px 12px;background:var(--surface2);border-radius:var(--r2);border-left:3px solid var(--accent);margin-bottom:${f.staff_reply?'10px':'0'}">${f.feedback_text}</div>
       ${f.staff_reply
-        ? `<div style="margin-top:10px;padding:10px 13px;background:var(--green-bg);border:1.5px solid rgba(22,163,74,.2);border-radius:var(--r2)">
-             <div style="font-size:11px;font-weight:700;color:var(--green);margin-bottom:4px">✅ Staff Reply</div>
+        ? `<div style="margin-top:10px;padding:10px 13px;background:var(--green-bg);border:1.5px solid rgba(22,163,74,.2);border-radius:var(--r2)" id="fb-reply-${f.feedback_id}">
+             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+               <div style="font-size:11px;font-weight:700;color:var(--green)">✅ Staff Reply</div>
+               ${!f.user_read_reply ? `<span style="font-size:10px;font-weight:700;color:var(--accent);background:var(--blue-bg);padding:2px 7px;border-radius:20px;cursor:pointer" onclick="markReplyRead(${f.feedback_id})">🔵 New Reply</span>` : ''}
+             </div>
              <div style="font-size:13px;color:var(--txt)">${f.staff_reply}</div>
+             ${f.replied_at ? `<div style="font-size:11px;color:var(--txt3);margin-top:4px">${f.replied_at?.substring(0,10)||''}</div>` : ''}
            </div>`
         : `<div style="font-size:11px;color:var(--txt3);margin-top:8px;font-style:italic">⏳ Awaiting staff reply…</div>`}
     </div>`).join('');
+}
+
+function markReplyRead(fid) {
+  fetch(`${API}/feedback/${fid}/read-reply`, {
+    method: 'POST', headers: authHeaders()
+  }).then(r => r.json()).then(data => {
+    if (data.ok) {
+      // Remove the "New Reply" badge
+      const badge = document.querySelector(`#fb-reply-${fid} span`);
+      if (badge) badge.remove();
+    }
+  }).catch(() => {});
 }
 
 async function analyzeFeedback() {
@@ -919,6 +940,7 @@ nav = function(id) {
 ════════════════════════════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', () => {
   initSettings();
+  if (typeof initNotifications === 'function') initNotifications();
   initAuth('user');
   updateTopbarUser();
   const badge = document.getElementById('nb-feedback-u');

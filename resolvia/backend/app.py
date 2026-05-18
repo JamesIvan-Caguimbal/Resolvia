@@ -128,6 +128,17 @@ def serialize_row(r):
     return r
 
 
+def push_notif(username: str, message: str, icon: str = "🔔"):
+    """Insert a notification into notification_log for the given username."""
+    try:
+        query(
+            "INSERT INTO notification_log (username, message, icon) VALUES (%s, %s, %s)",
+            (username, message, icon), commit=True
+        )
+    except Exception:
+        pass
+
+
 # ══════════════════════════════════════════════════════════════
 #  AUTH  —  /api/auth
 # ══════════════════════════════════════════════════════════════
@@ -363,6 +374,11 @@ def submit_complaint():
         cur.close()
         conn.close()
 
+    # Notify all administrators of new complaint
+    admins = query("SELECT username FROM admin_accounts WHERE role = 'Administrator'") or []
+    for adm in admins:
+        push_notif(adm["username"], f"New complaint submitted: {ref_number}", "🎫")
+
     return ok({"ref": ref_number, "assigned_to": assigned_to}, "Complaint submitted successfully.", 201)
 
 
@@ -551,6 +567,34 @@ def update_complaint(ref):
             "INSERT INTO complaint_audit_trail (complaint_id, audit_entry, created_by) VALUES (%s,%s,%s)",
             (cid, note, identity["username"]), commit=True
         )
+
+    # Notifications
+    complaint_info = query(
+        """SELECT c.ref_number, c.customer_name,
+                  ca.username AS cust_username, s.staff_name,
+                  adm.username AS staff_username
+           FROM complaints c
+           LEFT JOIN customer_accounts ca ON ca.customer_id = c.customer_id
+           LEFT JOIN staff s ON s.staff_id = c.assigned_staff_id
+           LEFT JOIN admin_accounts adm ON adm.staff_id = s.staff_id
+           WHERE c.complaint_id = %s""",
+        (cid,), fetchone=True
+    )
+    if complaint_info:
+        ref = complaint_info["ref_number"]
+        if "status" in body:
+            new_st = body["status"]
+            # Notify customer of status change
+            if complaint_info.get("cust_username"):
+                push_notif(complaint_info["cust_username"],
+                           f"Your complaint {ref} status changed to: {new_st}", "📋")
+            # Notify assigned staff if resolved by admin
+            if new_st == "Resolved" and complaint_info.get("staff_username"):
+                push_notif(complaint_info["staff_username"],
+                           f"Ticket {ref} has been marked Resolved", "✅")
+        if "assigned_staff_id" in body and complaint_info.get("staff_username"):
+            push_notif(complaint_info["staff_username"],
+                       f"Ticket {ref} has been assigned to you", "👤")
 
     return ok(msg="Complaint updated.")
 
@@ -881,9 +925,22 @@ def submit_feedback():
     if existing_fb:
         return err("You have already submitted feedback for this ticket.")
 
+    # Get assigned_staff_id from the complaint for proper FK linkage
+    assigned_staff_id = None
+    if complaint_id:
+        staff_row = query(
+            "SELECT assigned_staff_id FROM complaints WHERE complaint_id = %s",
+            (complaint_id,), fetchone=True
+        )
+        if staff_row:
+            assigned_staff_id = staff_row["assigned_staff_id"]
+
     query(
-        "INSERT INTO customer_feedback (customer_id, feedback_text, category_id, sentiment_id, complaint_id) VALUES (%s,%s,%s,%s,%s)",
-        (identity["id"], text, cat["category_id"], sent["sentiment_id"], complaint_id), commit=True
+        """INSERT INTO customer_feedback
+           (customer_id, feedback_text, category_id, sentiment_id, complaint_id, assigned_to_staff_id)
+           VALUES (%s, %s, %s, %s, %s, %s)""",
+        (identity["id"], text, cat["category_id"], sent["sentiment_id"], complaint_id, assigned_staff_id),
+        commit=True
     )
     return ok(msg="Feedback submitted.", status=201)
 
@@ -915,12 +972,40 @@ def reply_feedback(fid):
         "UPDATE customer_feedback SET staff_reply=%s, replied_at=NOW(), is_read=TRUE WHERE feedback_id=%s",
         (reply, fid), commit=True
     )
+    # Notify the customer that their feedback received a reply
+    fb_info = query(
+        """SELECT ca.username, c.ref_number
+           FROM customer_feedback f
+           JOIN customer_accounts ca ON ca.customer_id = f.customer_id
+           LEFT JOIN complaints c ON c.complaint_id = f.complaint_id
+           WHERE f.feedback_id = %s""",
+        (fid,), fetchone=True
+    )
+    if fb_info and fb_info.get("username"):
+        ref_txt = f" on ticket {fb_info['ref_number']}" if fb_info.get("ref_number") else ""
+        push_notif(fb_info["username"],
+                   f"Staff replied to your feedback{ref_txt}", "💬")
+
     return ok(msg="Reply sent.")
 
 
 # ══════════════════════════════════════════════════════════════
 #  REPORTS / DASHBOARD  —  /api/reports
 # ══════════════════════════════════════════════════════════════
+
+@app.route("/api/feedback/<int:fid>/read-reply", methods=["POST"])
+@jwt_required()
+def mark_reply_read(fid):
+    """POST /api/feedback/<id>/read-reply — customer marks staff reply as read."""
+    identity = get_jwt()
+    if identity.get("mode") != "customer":
+        return err("Customer access required.", 403)
+    query(
+        "UPDATE customer_feedback SET user_read_reply = TRUE WHERE feedback_id = %s AND customer_id = %s",
+        (fid, identity["id"]), commit=True
+    )
+    return ok(msg="Reply marked as read.")
+
 
 @app.route("/api/reports/dashboard", methods=["GET"])
 @jwt_required()

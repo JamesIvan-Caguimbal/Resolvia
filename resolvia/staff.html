@@ -118,6 +118,10 @@
   </div>
   <div class="topbar-right">
     <span class="admin-badge">👤 Staff Mode</span>
+    <div class="tb-btn" id="btn-notif" onclick="toggleNotifPanel()" title="Notifications" style="position:relative">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <span class="notif-count" id="notif-count"></span>
+    </div>
     <div class="tb-btn" id="btn-settings" onclick="toggleSettingsPanel()" title="Settings">
       <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     </div>
@@ -316,20 +320,21 @@
     </div>
     <div>
       <div class="pn-sec-title">Resolution Notes</div>
-      <div class="fg"><textarea id="pn-notes" class="fta" rows="3" placeholder="Enter resolution notes…"></textarea></div>
+      <div style="font-size:11px;color:var(--txt3);margin-bottom:6px">Document the steps you took to resolve this complaint.</div>
+      <div class="fg"><textarea id="pn-notes" class="fta" rows="4" placeholder="Enter resolution notes, steps taken, or any relevant details…"></textarea></div>
       <button class="btn btn-primary" style="width:100%;margin-top:8px" onclick="staffSaveNotes()">💾 Save Notes</button>
     </div>
     <div><div class="pn-sec-title">Audit Trail</div><div class="audit" id="pn-audit"></div></div>
   </div>
 </aside>
 
-<!-- NOTIFICATIONS PANEL -->
-<div class="notif-actions"><span class="notif-mark-all" onclick="markAllNotifsRead()">Mark all read</span></div></div>
+<!-- SETTINGS PANEL -->
+<div class="notif-panel" id="notif-panel">
+  <div class="notif-hd"><div class="notif-title">Notifications</div><div class="notif-actions"><span class="notif-mark-all" onclick="markAllNotifsRead()">Mark all read</span></div></div>
   <div class="notif-list" id="notif-list"></div>
-  <div class="notif-footer"><span class="notif-view-all" onclick="showToast('📋','View all — available in full release')">View all notifications</span></div>
+  <div class="notif-footer"><span class="notif-view-all" onclick="markAllNotifsRead()">Mark all read</span></div>
 </div>
 
-<!-- SETTINGS PANEL -->
 <div class="settings-panel" id="settings-panel">
   <div class="settings-hd"><div class="settings-title">Settings</div><div class="settings-sub">Staff preferences</div></div>
   <div class="settings-body">
@@ -350,6 +355,7 @@
 
 <!-- ════ SCRIPTS ════ -->
 <script src="js/auth.js"></script>
+<script src="js/notifications.js"></script>
 <script src="js/settings.js"></script>
 <script>
 'use strict';
@@ -801,15 +807,16 @@ function staffClosePanel() {
 function staffSaveNotes() {
   if (!staffOpenRef) return;
   const notes = document.getElementById('pn-notes')?.value || '';
-  fetch(`${API}/complaints/${staffOpenRef}`, {
+  staffFetch(`${API}/complaints/${staffOpenRef}`, {
     method: 'PUT',
     headers: authHeaders(),
     body: JSON.stringify({ resolution_notes: notes })
   })
   .then(r => r.json())
   .then(data => {
-    if (!data.ok) { showToast('⚠️', 'Could not save notes.'); return; }
+    if (!data.ok) { showToast('⚠️', data.message || 'Could not save notes.'); return; }
     showToast('💾', 'Notes saved.');
+    staffOpenTicket(staffOpenRef); /* refresh panel */
   })
   .catch(() => showToast('⚠️', 'Could not connect to server.'));
 }
@@ -1095,6 +1102,7 @@ function confirmLogout() {
 ════════════════════════════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', () => {
   if (typeof initSettings      === 'function') initSettings();
+  if (typeof initNotifications === 'function') initNotifications();
   if (typeof loadSession       === 'function') loadSession();
 
   /* Check if already logged in — must have token AND name */
