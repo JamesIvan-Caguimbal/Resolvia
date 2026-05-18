@@ -97,7 +97,12 @@ function handleNotifClick(id) {
   // If linked to a ticket, navigate there
   if (n.ref) {
     closeNotifPanel();
-    if (typeof nav === 'function') {
+    if (typeof staffNav === 'function') {
+      staffNav('mytickets');
+      setTimeout(() => {
+        if (typeof staffOpenTicket === 'function') staffOpenTicket(n.ref);
+      }, 250);
+    } else if (typeof nav === 'function') {
       nav('tickets');
       setTimeout(() => {
         if (typeof openTicket === 'function') openTicket(n.ref);

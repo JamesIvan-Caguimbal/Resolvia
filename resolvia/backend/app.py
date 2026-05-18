@@ -559,16 +559,34 @@ def update_complaint(ref):
 @jwt_required()
 def rate_complaint(ref):
     """POST /api/complaints/<ref>/rate — customer submits satisfaction rating."""
+    identity = get_jwt()
     body   = request.get_json(silent=True) or {}
     rating = body.get("rating")
+
+    # Accept both int and string (frontend may send either)
+    try:
+        rating = int(rating)
+    except (TypeError, ValueError):
+        rating = 0
+
     if rating not in [1, 2, 3, 4, 5]:
         return err("Rating must be an integer 1–5.")
 
+    # Fetch the ticket — join with v_complaints_full to get status name
     existing = query(
-        "SELECT complaint_id FROM complaints WHERE ref_number=%s", (ref,), fetchone=True
+        """SELECT c.complaint_id, ts.status_name AS status,
+                  c.satisfaction_rating, c.customer_id
+           FROM complaints c
+           JOIN ticket_statuses ts ON ts.status_id = c.status_id
+           WHERE c.ref_number=%s""",
+        (ref,), fetchone=True
     )
     if not existing:
         return err("Ticket not found.", 404)
+    if existing["status"] != "Resolved":
+        return err("Rating is only available once your ticket is resolved.")
+    if existing["satisfaction_rating"]:
+        return err("You have already rated this ticket.")
 
     query(
         "UPDATE complaints SET satisfaction_rating=%s WHERE complaint_id=%s",
@@ -773,10 +791,12 @@ def list_feedback():
     if identity.get("mode") == "customer":
         rows = query(
             """SELECT f.*, fc.category_name, st.sentiment_name,
-                      NULL AS customer_name, NULL AS assigned_to_staff
+                      NULL AS customer_name, NULL AS assigned_to_staff,
+                      c.ref_number AS complaint_ref
                FROM customer_feedback f
                JOIN feedback_categories fc ON fc.category_id = f.category_id
                JOIN sentiment_types st ON st.sentiment_id = f.sentiment_id
+               LEFT JOIN complaints c ON c.complaint_id = f.complaint_id
                WHERE f.customer_id = %s ORDER BY f.submitted_at DESC""",
             (identity["id"],)
         )
@@ -836,12 +856,30 @@ def submit_feedback():
     if not sent:
         sent = query("SELECT sentiment_id FROM sentiment_types LIMIT 1", fetchone=True)
 
-    complaint_ref = body.get("complaint_ref") or None
-    complaint_id  = None
-    if complaint_ref:
-        c = query("SELECT complaint_id FROM complaints WHERE ref_number=%s", (complaint_ref,), fetchone=True)
-        if c:
-            complaint_id = c["complaint_id"]
+    complaint_ref = (body.get("complaint_ref") or "").strip()
+    if not complaint_ref:
+        return err("A resolved ticket must be selected to submit feedback.")
+
+    c = query(
+        """SELECT c.complaint_id, ts.status_name
+           FROM complaints c
+           JOIN ticket_statuses ts ON ts.status_id = c.status_id
+           WHERE c.ref_number = %s""",
+        (complaint_ref,), fetchone=True
+    )
+    if not c:
+        return err("Ticket not found.", 404)
+    if c["status_name"] != "Resolved":
+        return err("Feedback can only be submitted for resolved tickets.")
+
+    complaint_id = c["complaint_id"]
+
+    existing_fb = query(
+        "SELECT feedback_id FROM customer_feedback WHERE complaint_id=%s AND customer_id=%s",
+        (complaint_id, identity["id"]), fetchone=True
+    )
+    if existing_fb:
+        return err("You have already submitted feedback for this ticket.")
 
     query(
         "INSERT INTO customer_feedback (customer_id, feedback_text, category_id, sentiment_id, complaint_id) VALUES (%s,%s,%s,%s,%s)",
@@ -863,12 +901,20 @@ def reply_feedback(fid):
     if not reply:
         return err("reply text is required.")
 
-    rows = query(
+    # Rule 3: Staff can reply once — check if already replied
+    existing = query(
+        "SELECT staff_reply FROM customer_feedback WHERE feedback_id=%s",
+        (fid,), fetchone=True
+    )
+    if not existing:
+        return err("Feedback not found.", 404)
+    if existing["staff_reply"]:
+        return err("You have already replied to this feedback.")
+
+    query(
         "UPDATE customer_feedback SET staff_reply=%s, replied_at=NOW(), is_read=TRUE WHERE feedback_id=%s",
         (reply, fid), commit=True
     )
-    if rows == 0:
-        return err("Feedback not found.", 404)
     return ok(msg="Reply sent.")
 
 
@@ -940,18 +986,31 @@ def resolution_report():
 @app.route("/api/reports/satisfaction", methods=["GET"])
 @jwt_required()
 def satisfaction_report():
-    """GET /api/reports/satisfaction — rated tickets, filtered for staff."""
+    """GET /api/reports/satisfaction — rated tickets with dept, filtered for staff."""
     identity = get_jwt()
     role = identity.get("role", "")
-    if role == "Administrator":
-        rows = query("SELECT * FROM v_satisfaction_ratings")
+    mode = identity.get("mode", "")
+
+    base_sql = """
+        SELECT c.ref_number, c.customer_name, ct.type_name AS complaint_type,
+               s.staff_name AS assigned_to, d.dept_name AS department,
+               c.satisfaction_rating
+        FROM complaints c
+        JOIN complaint_types ct ON ct.type_id = c.type_id
+        LEFT JOIN staff s ON s.staff_id = c.assigned_staff_id
+        LEFT JOIN departments d ON d.dept_id = s.dept_id
+        WHERE c.satisfaction_rating IS NOT NULL
+        ORDER BY c.submitted_date DESC
+    """
+
+    if role == "Administrator" or mode == "customer":
+        rows = query(base_sql)
     else:
-        # Staff sees only tickets assigned to them
         name = identity.get("name", "")
-        rows = query(
-            "SELECT * FROM v_satisfaction_ratings WHERE assigned_to = %s",
-            (name,)
-        )
+        rows = query(base_sql.replace(
+            "WHERE c.satisfaction_rating IS NOT NULL",
+            "WHERE c.satisfaction_rating IS NOT NULL AND s.staff_name = %s"
+        ), (name,))
     return ok(rows)
 
 

@@ -104,7 +104,7 @@
       </div>
     </div>
 
-    <div class="auth-footer">Demo login: <strong>user</strong> / <strong>User@2025</strong></div>
+    <div class="auth-footer"></div>
   </div>
 </div>
 
@@ -139,10 +139,6 @@
     </div>
   </div>
   <div class="topbar-right">
-    <div class="tb-btn" id="btn-notif" onclick="toggleNotifPanel()" title="Notifications" style="position:relative">
-      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-      <span class="notif-count" id="notif-count"></span>
-    </div>
     <div class="tb-btn" id="btn-settings" onclick="toggleSettingsPanel()" title="Settings">
       <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     </div>
@@ -319,7 +315,7 @@
     <div class="card" style="padding:0;overflow:hidden">
       <div style="padding:14px 16px;border-bottom:1.5px solid var(--border);font-family:var(--fd);font-size:13px;font-weight:700;background:var(--surface2)">My Complaints</div>
       <div class="tbl-wrap"><table>
-        <thead><tr><th>Ref #</th><th>Date</th><th>Type</th><th>Priority</th><th>Status</th><th>Assigned To</th></tr></thead>
+        <thead><tr><th>Ref #</th><th>Date</th><th>Type</th><th>Priority</th><th>Status</th><th>Assigned To</th><th></th></tr></thead>
         <tbody id="my-tkt-tbody"></tbody>
       </table></div>
     </div>
@@ -359,26 +355,28 @@
   <!-- ── Satisfaction Ratings ── -->
   <div class="page" id="p-ratings">
     <div class="ph">
-      <div class="ph-left"><div class="ph-title">Satisfaction Ratings</div><div class="ph-sub">Customer feedback on resolved complaints</div></div>
+      <div class="ph-left"><div class="ph-title">Satisfaction Ratings</div><div class="ph-sub">Your ratings per department on resolved tickets</div></div>
     </div>
     <div class="rpt-layout">
       <div>
         <div class="card" style="padding:0;overflow:hidden">
           <div style="padding:14px 16px;border-bottom:1.5px solid var(--border);font-family:var(--fd);font-size:13px;font-weight:700;background:var(--surface2)">Rated Tickets</div>
           <div class="tbl-wrap"><table>
-            <thead><tr><th>Ref #</th><th>Customer</th><th>Type</th><th>Assigned To</th><th>Rating</th></tr></thead>
+            <thead><tr><th>Ref #</th><th>Customer</th><th>Type</th><th>Department</th><th>Assigned To</th><th>Rating</th></tr></thead>
             <tbody id="ratings-tbody"></tbody>
           </table></div>
         </div>
       </div>
       <div class="card" style="position:sticky;top:80px">
-        <div class="card-title" style="margin-bottom:4px">Average Rating</div>
+        <div class="card-title" style="margin-bottom:4px">Overall Average</div>
         <div id="avg-rating" style="font-size:32px;font-weight:800;color:var(--txt);margin-bottom:2px">—</div>
         <div id="rated-count" style="font-size:12px;color:var(--txt3);margin-bottom:18px">0 ratings received</div>
         <div class="card-title" style="margin-bottom:10px">Score Distribution</div>
         <div id="rating-bars" style="display:flex;flex-direction:column;gap:8px"></div>
+        <div class="card-title" style="margin-top:18px;margin-bottom:10px">By Department</div>
+        <div id="dept-breakdown" style="display:flex;flex-direction:column"></div>
         <div style="margin-top:18px;padding:12px;background:var(--surface2);border-radius:var(--r2);font-size:12px;color:var(--txt3);line-height:1.6">
-          💡 Ratings are submitted by customers after their ticket is resolved. Rate your resolved tickets in the <strong style="color:var(--txt)">Track Status</strong> or <strong style="color:var(--txt)">All Tickets</strong> view.
+          💡 Ratings are submitted after a ticket is resolved. Go to <strong style="color:var(--txt)">My Tickets</strong> and open a resolved ticket to leave your rating.
         </div>
       </div>
     </div>
@@ -397,7 +395,7 @@
         <div class="sub-hd"><div class="sub-title">Share Your Experience</div><div class="sub-sub">Tell us how we did — staff will read and reply to your feedback.</div></div>
         <div class="sub-body">
           <div class="fg">
-            <label class="fl">Related Ticket (optional)</label>
+            <label class="fl">Ticket <span style="color:var(--red)">*</span> <span style="font-size:11px;color:var(--txt3)">(resolved tickets without feedback)</span></label>
             <select id="fb-ticket-ref" class="fs">
               <option value="">— Select a resolved ticket —</option>
             </select>
@@ -499,8 +497,7 @@
 </aside>
 
 <!-- NOTIFICATIONS PANEL -->
-<div class="notif-panel" id="notif-panel">
-  <div class="notif-hd"><div class="notif-title">Notifications</div><div class="notif-actions"><span class="notif-mark-all" onclick="markAllNotifsRead()">Mark all read</span></div></div>
+<div class="notif-actions"><span class="notif-mark-all" onclick="markAllNotifsRead()">Mark all read</span></div></div>
   <div class="notif-list" id="notif-list"></div>
   <div class="notif-footer"><span class="notif-view-all" onclick="showToast('📋','View all — coming soon')">View all notifications</span></div>
 </div>
@@ -510,11 +507,6 @@
   <div class="settings-hd"><div class="settings-title">Settings</div><div class="settings-sub">Personalize your Resolvia experience</div></div>
   <div class="settings-body">
     <div class="settings-section">Appearance</div>
-    <div class="setting-row"><div class="setting-info"><div class="setting-label">🌙 Dark Mode</div><div class="setting-desc">Switch to dark color scheme</div></div><label class="toggle"><input type="checkbox" id="toggle-dark" onchange="toggleDarkMode()"><span class="toggle-track"></span></label></div>
-    <div class="setting-row"><div class="setting-info"><div class="setting-label">📐 Compact View</div><div class="setting-desc">Reduce spacing for more content</div></div><label class="toggle"><input type="checkbox" id="toggle-compact" onchange="toggleCompactMode(this.checked)"><span class="toggle-track"></span></label></div>
-    <div class="settings-div"></div>
-    <div class="settings-section">Notifications</div>
-    <div class="setting-row"><div class="setting-info"><div class="setting-label">🔔 Email Alerts</div><div class="setting-desc">Get updates on your complaint</div></div><label class="toggle"><input type="checkbox" id="toggle-notifs" checked onchange="toggleNotifPref(this.checked)"><span class="toggle-track"></span></label></div>
     <div class="settings-div"></div>
     <div class="settings-section">Account</div>
     <div class="setting-row"><div class="setting-info"><div class="setting-label">🔒 Sign Out</div><div class="setting-desc">End your current session</div></div><button class="btn btn-red btn-sm" onclick="promptLogout()">Sign Out</button></div>
@@ -529,7 +521,6 @@
 
 <script src="js/app.js?v=2"></script>
 <script src="js/auth.js"></script>
-<script src="js/notifications.js?v=2"></script>
 <script src="js/settings.js"></script>
 <script>
 'use strict';
@@ -630,7 +621,6 @@ function renderTickets() {
       <td><span class="pill pri-pill ${priorityCls(t.priority)}">${priorityIcon(t.priority)} ${t.priority || 'Medium'}</span></td>
       <td><span class="pill ${pillCls(t.status)}">${t.status}</span></td>
       <td><div class="asgn"><div class="asgn-av">${ini(t.assigned_to||'UN')}</div>${t.assigned_to||'Unassigned'}</div></td>
-      <td><button class="btn btn-ghost btn-sm" onclick="openTicket('${t.ref_number}')">View →</button></td>
     </tr>`).join('');
   renderPag();
 }
@@ -643,21 +633,61 @@ let fbAnalyzed = null;
 function loadFeedbackPage() {
   const token = getToken();
   if (!token) return;
+  fbAnalyzed = null;
 
-  /* Populate ticket dropdown with customer's resolved tickets */
+  /* Step 1: get customer's resolved tickets */
   fetch(`${API}/complaints/mine`, { headers: authHeaders() })
     .then(r => r.json())
-    .then(data => {
+    .then(ticketData => {
       const sel = document.getElementById('fb-ticket-ref');
       if (!sel) return;
-      const resolved = (data.data || []).filter(t => t.status === 'Resolved');
-      sel.innerHTML = '<option value="">— Select a resolved ticket (optional) —</option>' +
-        resolved.map(t => `<option value="${t.ref_number}">${t.ref_number} · ${t.complaint_type} · ${fmtDate(t.submitted_date)}</option>`).join('');
-    })
-    .catch(() => {});
 
-  fbAnalyzed = null;
+      const resolved = (ticketData.data || []).filter(t => t.status === 'Resolved');
+
+      /* Step 2: get customer's existing feedback to filter out already-used tickets */
+      fetch(`${API}/feedback`, { headers: authHeaders() })
+        .then(r => r.json())
+        .then(feedbackData => {
+          const usedRefs = new Set(
+            (feedbackData.data || [])
+              .filter(f => f.complaint_ref)
+              .map(f => f.complaint_ref)
+          );
+          const eligible = resolved.filter(t => !usedRefs.has(t.ref_number));
+          _populateFeedbackDropdown(sel, eligible);
+        })
+        .catch(() => {
+          /* If feedback fetch fails, still show all resolved tickets */
+          _populateFeedbackDropdown(sel, resolved);
+        });
+    })
+    .catch(() => showToast('⚠️', 'Could not load your tickets.'));
+
   loadUserFeedbacks();
+}
+
+function _populateFeedbackDropdown(sel, eligible) {
+  const submitBtn  = document.getElementById('fb-submit-btn');
+  const analyzeBtn = document.getElementById('fb-analyze-btn');
+  const textInput  = document.getElementById('fb-text-input');
+
+  if (eligible.length === 0) {
+    sel.innerHTML = '<option value="">— No resolved tickets available for feedback —</option>';
+    sel.disabled = true;
+    if (submitBtn)  submitBtn.disabled  = true;
+    if (analyzeBtn) analyzeBtn.disabled = true;
+    if (textInput)  textInput.placeholder = 'You need a resolved ticket to submit feedback.';
+  } else {
+    sel.disabled = false;
+    sel.innerHTML = '<option value="">— Select a resolved ticket —</option>' +
+      eligible.map(t =>
+        `<option value="${t.ref_number}">${t.ref_number} · ${t.complaint_type} · ${fmtDate(t.submitted_date)}</option>`
+      ).join('');
+    if (submitBtn)  submitBtn.disabled  = false;
+    if (analyzeBtn) analyzeBtn.disabled = false;
+    if (textInput && textInput.placeholder.includes('need a resolved'))
+      textInput.placeholder = 'Describe your experience…';
+  }
 }
 
 function loadUserFeedbacks() {
@@ -757,8 +787,9 @@ function submitUserFeedback() {
   const ticketRef = document.getElementById('fb-ticket-ref')?.value || '';
   const token     = getToken();
 
-  if (!text)  { showToast('⚠️', 'Please write your feedback first'); return; }
-  if (!token) { showToast('⚠️', 'Please log in to submit feedback'); return; }
+  if (!token)     { showToast('⚠️', 'Please log in to submit feedback'); return; }
+  if (!ticketRef) { showToast('⚠️', 'Please select a resolved ticket first'); return; }
+  if (!text)      { showToast('⚠️', 'Please write your feedback first'); return; }
 
   const cat      = fbAnalyzed || { category:'General', sentiment:'Neutral' };
   const sentMap  = { 'Positive':1, 'Neutral':2, 'Negative':3 };
@@ -799,6 +830,8 @@ function submitUserFeedback() {
     showToast('💬', 'Feedback submitted!');
     fbAnalyzed = null;
     loadUserFeedbacks();
+    /* Reload dropdown so this ticket no longer appears */
+    setTimeout(() => loadFeedbackPage(), 800);
   })
   .catch(() => showToast('⚠️', 'Could not submit feedback.'));
 }
@@ -837,7 +870,7 @@ function submitRating(ref, stars) {
   .then(data => {
     if (!data.ok) { showToast('⚠️', data.message || 'Rating failed.'); return; }
     showToast('🌟', `Thank you! You rated ${ref} — ${stars}/5 stars`);
-    openTicket(ref); /* refresh panel */
+    openTicket(ref); /* refresh panel to show submitted stars */
   })
   .catch(() => showToast('⚠️', 'Could not submit rating.'));
 }
@@ -846,24 +879,29 @@ function renderRatingUI(t) {
   const wrap = document.getElementById('pn-rating-wrap');
   if (!wrap) return;
 
-  if (t.status !== 'Resolved') {
+  /* Normalise status in case of whitespace */
+  const status = (t.status || '').trim();
+
+  if (status !== 'Resolved') {
     wrap.innerHTML = `<div style="font-size:12px;color:var(--txt3);font-style:italic">
-      ⭐ Rating available once your ticket is resolved.</div>`;
+      ⭐ Rating available once your ticket is resolved. (Current: ${status || 'Unknown'})</div>`;
     return;
   }
   if (t.satisfaction_rating) {
+    const stars = parseInt(t.satisfaction_rating, 10);
     wrap.innerHTML = `<div style="display:flex;align-items:center;gap:8px">
-      <span style="font-size:20px">${'⭐'.repeat(t.satisfaction_rating)}</span>
-      <span style="font-size:12px;color:var(--txt3)">${t.satisfaction_rating}/5 — Thank you for your feedback!</span>
+      <span style="font-size:20px">${'⭐'.repeat(stars)}</span>
+      <span style="font-size:12px;color:var(--txt3)">${stars}/5 — Thank you for your feedback!</span>
     </div>`;
     return;
   }
+  /* Show star buttons */
   wrap.innerHTML = `
     <div style="font-size:12px;color:var(--txt2);margin-bottom:8px">How satisfied are you with the resolution?</div>
     <div class="star-rating">
-      ${[1,2,3,4,5].map(s => `
-        <button class="star-btn" onclick="submitRating('${t.ref_number}',${s})" title="${s} star${s>1?'s':''}">★</button>
-      `).join('')}
+      ${[1,2,3,4,5].map(s =>
+        `<button class="star-btn" onclick="submitRating('${t.ref_number}',${s})" title="${s} star${s>1?'s':''}">★</button>`
+      ).join('')}
     </div>`;
 }
 
@@ -881,7 +919,6 @@ nav = function(id) {
 ════════════════════════════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', () => {
   initSettings();
-  initNotifications();
   initAuth('user');
   updateTopbarUser();
   const badge = document.getElementById('nb-feedback-u');

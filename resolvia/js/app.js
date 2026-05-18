@@ -546,6 +546,7 @@ function renderMyTickets() {
       <td><span class="pill pri-pill ${priorityCls(t.priority)}">${priorityIcon(t.priority)} ${t.priority}</span></td>
       <td><span class="pill ${pillCls(t.status)}">${t.status}</span></td>
       <td>${t.assigned_to || 'Unassigned'}</td>
+      <td><button class="btn btn-ghost btn-sm" onclick="openMyTicket('${t.ref_number}')">View →</button></td>
     </tr>`).join('');
 }
 
@@ -744,13 +745,15 @@ function renderRatingsPage() {
     .then(r => r.json())
     .then(data => {
       if (!data.ok) return;
-      const rated = data.data; /* all ratings — no filtering */  /* all ratings — no filtering */
+      const rated = data.data;
 
       const avgEl  = document.getElementById('avg-rating');
       const cntEl  = document.getElementById('rated-count');
       const barsEl = document.getElementById('rating-bars');
       const tbody  = document.getElementById('ratings-tbody');
+      const deptEl = document.getElementById('dept-breakdown');
 
+      /* Overall average */
       const avg = rated.length
         ? (rated.reduce((s, t) => s + (t.satisfaction_rating || 0), 0) / rated.length).toFixed(1)
         : '—';
@@ -758,6 +761,7 @@ function renderRatingsPage() {
       if (avgEl) avgEl.textContent = avg !== '—' ? `${avg} ⭐` : '—';
       if (cntEl) cntEl.textContent = `${rated.length} rating${rated.length !== 1 ? 's' : ''} received`;
 
+      /* Score distribution bars */
       if (barsEl) {
         const dist = [5,4,3,2,1].map(s => ({
           s, count: rated.filter(t => t.satisfaction_rating === s).length
@@ -774,14 +778,40 @@ function renderRatingsPage() {
         }).join('');
       }
 
+      /* Per-department breakdown */
+      if (deptEl) {
+        const depts = [...new Set(rated.map(t => t.department || 'Unassigned'))];
+        deptEl.innerHTML = depts.length === 0
+          ? '<div style="color:var(--txt3);font-size:13px;padding:8px 0">No department data yet.</div>'
+          : depts.map(dept => {
+              const dRated = rated.filter(t => (t.department || 'Unassigned') === dept);
+              const dAvg = dRated.length
+                ? (dRated.reduce((s, t) => s + (t.satisfaction_rating || 0), 0) / dRated.length).toFixed(1)
+                : '—';
+              const pct = dAvg !== '—' ? Math.round((parseFloat(dAvg) / 5) * 100) : 0;
+              const color = dAvg >= 4 ? 'var(--green)' : dAvg >= 3 ? '#f59e0b' : 'var(--red)';
+              return `<div style="margin-bottom:14px">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+                  <span style="font-size:12px;font-weight:700;color:var(--txt)">${dept}</span>
+                  <span style="font-size:13px;font-weight:800;color:${color}">${dAvg} ⭐ <span style="font-size:11px;color:var(--txt3);font-weight:400">(${dRated.length})</span></span>
+                </div>
+                <div class="progress-bar">
+                  <div class="progress-bar-fill" style="width:${pct}%;background:${color}"></div>
+                </div>
+              </div>`;
+            }).join('');
+      }
+
+      /* Tickets table */
       if (tbody) {
         tbody.innerHTML = rated.length === 0
-          ? `<tr><td colspan="5" style="text-align:center;color:var(--txt3);padding:36px">No ratings yet.</td></tr>`
+          ? `<tr><td colspan="6" style="text-align:center;color:var(--txt3);padding:36px">No ratings yet.</td></tr>`
           : rated.map(t => `
             <tr>
               <td><span class="ref-id" onclick="openTicket('${t.ref_number}')">${t.ref_number}</span></td>
               <td style="color:var(--txt);font-weight:500">${t.customer_name}</td>
               <td>${t.complaint_type}</td>
+              <td>${t.department || '—'}</td>
               <td>${t.assigned_to || '—'}</td>
               <td><span style="font-size:16px">${'⭐'.repeat(t.satisfaction_rating)}</span>
                   <span style="font-size:11px;color:var(--txt3);margin-left:6px">${t.satisfaction_rating}/5</span>

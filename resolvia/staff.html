@@ -75,9 +75,7 @@
       <button class="auth-btn" onclick="staffLogin()">Sign In as Staff →</button>
     </div>
 
-    <div class="auth-footer">
-      Customer Portal? <a href="/">Customer Login →</a>
-    </div>
+    <div class="auth-footer"></div>
   </div>
 </div>
 
@@ -120,10 +118,6 @@
   </div>
   <div class="topbar-right">
     <span class="admin-badge">👤 Staff Mode</span>
-    <div class="tb-btn" id="btn-notif" onclick="toggleNotifPanel()" title="Notifications" style="position:relative">
-      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-      <span class="notif-count" id="notif-count"></span>
-    </div>
     <div class="tb-btn" id="btn-settings" onclick="toggleSettingsPanel()" title="Settings">
       <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     </div>
@@ -259,7 +253,7 @@
         <div class="card" style="padding:0;overflow:hidden">
           <div style="padding:14px 16px;border-bottom:1.5px solid var(--border);font-family:var(--fd);font-size:13px;font-weight:700;background:var(--surface2)">My Rated Tickets</div>
           <div class="tbl-wrap"><table>
-            <thead><tr><th>Ref #</th><th>Customer</th><th>Type</th><th>Rating</th></tr></thead>
+            <thead><tr><th>Ref #</th><th>Customer</th><th>Type</th><th>Department</th><th>Rating</th></tr></thead>
             <tbody id="ratings-tbody"></tbody>
           </table></div>
         </div>
@@ -330,8 +324,7 @@
 </aside>
 
 <!-- NOTIFICATIONS PANEL -->
-<div class="notif-panel" id="notif-panel">
-  <div class="notif-hd"><div class="notif-title">Notifications</div><div class="notif-actions"><span class="notif-mark-all" onclick="markAllNotifsRead()">Mark all read</span></div></div>
+<div class="notif-actions"><span class="notif-mark-all" onclick="markAllNotifsRead()">Mark all read</span></div></div>
   <div class="notif-list" id="notif-list"></div>
   <div class="notif-footer"><span class="notif-view-all" onclick="showToast('📋','View all — available in full release')">View all notifications</span></div>
 </div>
@@ -356,17 +349,44 @@
 <div class="toast" id="toast"><div class="toast-ic" id="t-ic">✅</div><div class="toast-tx" id="t-tx">Done</div></div>
 
 <!-- ════ SCRIPTS ════ -->
-<script src="js/app.js?v=3"></script>
-<script src="js/auth.js?v=3"></script>
-<script src="js/notifications.js?v=3"></script>
-<script src="js/settings.js?v=3"></script>
+<script src="js/auth.js"></script>
+<script src="js/settings.js"></script>
 <script>
 'use strict';
+
+const API = window.location.origin + '/api';
+
+/* ════════════════════════════════════════════════════════════
+   STAFF CORE FUNCTIONS — always defined, always use sessionStorage
+════════════════════════════════════════════════════════════ */
+function getToken()     { return sessionStorage.getItem('rv_token') || ''; }
+function authHeaders()  { return { 'Authorization': 'Bearer ' + getToken(), 'Content-Type': 'application/json' }; }
+function getSession()   { try { const r = sessionStorage.getItem('rv_session'); return r ? JSON.parse(r) : null; } catch(e) { return null; } }
+function saveSession(data) { try { sessionStorage.setItem('rv_session', JSON.stringify(data)); } catch(e) {} }
+function loadSession()  { return getSession(); }
+function clearSession() { sessionStorage.removeItem('rv_token'); sessionStorage.removeItem('rv_session'); }
 
 /* ════════════════════════════════════════════════════════════
    CONSTANTS
 ════════════════════════════════════════════════════════════ */
 const STAFF_PER = 15;
+
+/* Auto-logout on expired/invalid token */
+function staffFetch(url, opts) {
+  console.log('[staffFetch]', url, 'token:', getToken().slice(0,20));
+  return fetch(url, opts).then(r => {
+    console.log('[staffFetch] status:', r.status, url);
+    if (r.status === 401) {
+      /* Token expired - only kick to login if we're not in the middle of a fresh login */
+      if (!getToken()) {
+        const sh = document.getElementById('app-shell'); if(sh) sh.style.display = 'none';
+        const as = document.getElementById('auth-screen'); if(as) { as.style.display = ''; as.style.opacity = '1'; as.style.pointerEvents = ''; }
+      }
+      throw new Error('unauthorized');
+    }
+    return r;
+  });
+}
 let staffDB       = [];   /* all my assigned tickets */
 let staffFiltered = [];   /* after search/filter */
 let staffPage     = 1;
@@ -379,6 +399,17 @@ let allFeedbackDB = [];   /* all feedback for this staff */
 function staffName()   { return getSession()?.name || ''; }
 function staffRole()   { return getSession()?.role || ''; }
 
+
+function showToast(icon, msg) {
+  const ic = document.getElementById('t-ic');
+  const tx = document.getElementById('t-tx');
+  const toast = document.getElementById('toast');
+  if (!toast) return;
+  if (ic) ic.textContent = icon;
+  if (tx) tx.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3000);
+}
 function setText(id, val) {
   const el = document.getElementById(id);
   if (el) el.textContent = val;
@@ -431,19 +462,22 @@ function staffLogin() {
   })
   .then(r => r.json())
   .then(data => {
+    console.log('[Staff Login] response:', JSON.stringify(data));
     if (!data.ok) { errEl.textContent = data.message || 'Login failed.'; return; }
 
+    const d = data.data; /* unwrap nested response */
+
     /* Block administrators from using staff portal */
-    if ((data.role || '').toLowerCase() === 'administrator') {
+    if ((d.role || '').toLowerCase() === 'administrator') {
       errEl.textContent = 'Administrators must use the Admin Portal.';
       return;
     }
 
-    /* Save session — populate both sessionStorage AND in-memory SESSION */
-    const sessionData = { name: data.name, role: data.role, username: user, mode: 'admin' };
-    sessionStorage.setItem('rv_token', data.token);
+    /* Save session */
+    const sessionData = { name: d.name, role: d.role, username: d.username, mode: 'admin' };
+    console.log('[Staff Login] saving session:', JSON.stringify(sessionData), 'token:', d.token ? d.token.slice(0,20) : 'MISSING');
+    sessionStorage.setItem('rv_token', d.token);
     sessionStorage.setItem('rv_session', JSON.stringify(sessionData));
-    if (typeof saveSession === 'function') saveSession(sessionData, 'admin');
 
     staffBootApp();
   })
@@ -454,8 +488,10 @@ function staffLogin() {
    BOOT APP
 ════════════════════════════════════════════════════════════ */
 function staffBootApp() {
-  document.getElementById('auth-screen').style.display = 'none';
-  document.getElementById('app-shell').style.display   = '';
+  const authScr = document.getElementById('auth-screen');
+  if (authScr) { authScr.style.display = 'none'; authScr.style.opacity = '0'; authScr.style.pointerEvents = 'none'; }
+  const appShell = document.getElementById('app-shell');
+  if (appShell) { appShell.style.display = 'grid'; appShell.style.opacity = '1'; }
   staffUpdateTopbar();
   staffLoadDashboard();
   staffLoadMyTickets();
@@ -466,6 +502,7 @@ function staffBootApp() {
 function staffUpdateTopbar() {
   const name = staffName();
   const role = staffRole();
+  console.log('[staffUpdateTopbar] name:', name, 'role:', role, 'session:', JSON.stringify(getSession()));
   const av   = ini(name);
   setText('sidebar-username', name);
   setText('sidebar-userrole', role);
@@ -501,7 +538,7 @@ function staffLoadDashboard() {
   const token = getToken();
   if (!token) return;
 
-  fetch(`${API}/complaints/all?limit=200`, { headers: authHeaders() })
+  staffFetch(`${API}/complaints/all?limit=200`, { headers: authHeaders() })
     .then(r => r.json())
     .then(data => {
       if (!data.ok) return;
@@ -536,7 +573,7 @@ function staffLoadMyTickets() {
   const token = getToken();
   if (!token) return;
 
-  fetch(`${API}/complaints/all?limit=200`, { headers: authHeaders() })
+  staffFetch(`${API}/complaints/all?limit=200`, { headers: authHeaders() })
     .then(r => r.json())
     .then(data => {
       if (!data.ok) { showToast('⚠️', 'Could not load tickets.'); return; }
@@ -656,7 +693,7 @@ function staffUpdateStatus(ref, newStatus, selectEl) {
     return;
   }
 
-  fetch(`${API}/complaints/${ref}`, {
+  staffFetch(`${API}/complaints/${ref}`, {
     method: 'PUT',
     headers: authHeaders(),
     body: JSON.stringify({ status: newStatus })
@@ -695,7 +732,7 @@ function staffOpenTicket(ref) {
   const token = getToken();
   if (!token) return;
 
-  fetch(`${API}/complaints/${ref}`, { headers: authHeaders() })
+  staffFetch(`${API}/complaints/${ref}`, { headers: authHeaders() })
     .then(r => r.json())
     .then(data => {
       if (!data.ok) { showToast('⚠️', 'Could not load ticket.'); return; }
@@ -739,7 +776,7 @@ function staffOpenTicket(ref) {
 }
 
 function staffPanelUpdateStatus(ref, newStatus, currentStatus) {
-  fetch(`${API}/complaints/${ref}`, {
+  staffFetch(`${API}/complaints/${ref}`, {
     method: 'PUT',
     headers: authHeaders(),
     body: JSON.stringify({ status: newStatus })
@@ -801,7 +838,7 @@ function staffTrackLookup() {
   if (!res) return;
   if (!q) { res.innerHTML = ''; return; }
 
-  fetch(`${API}/complaints/all?search=${encodeURIComponent(q)}&limit=50`, { headers: authHeaders() })
+  staffFetch(`${API}/complaints/all?search=${encodeURIComponent(q)}&limit=50`, { headers: authHeaders() })
     .then(r => r.json())
     .then(data => {
       if (!data.ok || !data.data.length) {
@@ -833,7 +870,7 @@ function staffRenderReports() {
   const token = getToken();
   if (!token) return;
 
-  fetch(`${API}/complaints/all?limit=200`, { headers: authHeaders() })
+  staffFetch(`${API}/complaints/all?limit=200`, { headers: authHeaders() })
     .then(r => r.json())
     .then(data => {
       if (!data.ok) return;
@@ -909,11 +946,11 @@ function staffRenderRatings() {
   const token = getToken();
   if (!token) return;
 
-  fetch(`${API}/reports/satisfaction`, { headers: authHeaders() })
+  staffFetch(`${API}/reports/satisfaction`, { headers: authHeaders() })
     .then(r => r.json())
     .then(data => {
       if (!data.ok) return;
-      const rated = data.data.filter(t => t.assigned_to === staffName());
+      const rated = data.data; /* all ratings — no filtering */
 
       const avg = rated.length
         ? (rated.reduce((s, t) => s + (t.satisfaction_rating || 0), 0) / rated.length).toFixed(1)
@@ -942,12 +979,13 @@ function staffRenderRatings() {
       const tbody = document.getElementById('ratings-tbody');
       if (tbody) {
         tbody.innerHTML = rated.length === 0
-          ? `<tr><td colspan="4" style="text-align:center;color:var(--txt3);padding:36px">No ratings yet.</td></tr>`
+          ? `<tr><td colspan="5" style="text-align:center;color:var(--txt3);padding:36px">No ratings yet.</td></tr>`
           : rated.map(t => `
             <tr>
               <td><span class="ref-id" onclick="staffOpenTicket('${t.ref_number}')">${t.ref_number}</span></td>
               <td style="color:var(--txt);font-weight:500">${t.customer_name}</td>
               <td>${t.complaint_type}</td>
+              <td>${t.department || '—'}</td>
               <td><span style="font-size:16px">${'⭐'.repeat(t.satisfaction_rating)}</span>
                   <span style="font-size:11px;color:var(--txt3);margin-left:6px">${t.satisfaction_rating}/5</span>
               </td>
@@ -969,7 +1007,7 @@ const CATEGORY_COLORS = {
 };
 
 function staffLoadFeedback() {
-  fetch(`${API}/feedback`, { headers: authHeaders() })
+  staffFetch(`${API}/feedback`, { headers: authHeaders() })
     .then(r => r.json())
     .then(data => {
       if (!data.ok) return;
@@ -1025,7 +1063,7 @@ function staffRenderFeedback(feedbacks) {
 function staffSubmitReply(id) {
   const ta = document.getElementById(`fb-reply-${id}`);
   if (!ta || !ta.value.trim()) { showToast('⚠️', 'Please write a reply first'); return; }
-  fetch(`${API}/feedback/${id}/reply`, {
+  staffFetch(`${API}/feedback/${id}/reply`, {
     method: 'POST', headers: authHeaders(),
     body: JSON.stringify({ reply: ta.value.trim() })
   })
@@ -1057,19 +1095,20 @@ function confirmLogout() {
 ════════════════════════════════════════════════════════════ */
 document.addEventListener('DOMContentLoaded', () => {
   if (typeof initSettings      === 'function') initSettings();
-  if (typeof initNotifications === 'function') initNotifications();
   if (typeof loadSession       === 'function') loadSession();
 
-  /* Check if already logged in */
+  /* Check if already logged in — must have token AND name */
   const token = getToken();
   const sess  = getSession();
-  if (token && sess) {
+  if (token && sess && sess.name && token !== 'undefined') {
     if ((sess.role || '').toLowerCase() === 'administrator') {
-      /* Admin accidentally on staff page — redirect */
       window.location.href = 'admin.html';
       return;
     }
     staffBootApp();
+  } else {
+    /* Clear any corrupt/incomplete session */
+    sessionStorage.clear();
   }
 });
 </script>
