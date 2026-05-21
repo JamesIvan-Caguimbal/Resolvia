@@ -16,10 +16,12 @@
 
 .auth-header { padding: 24px 28px 20px; border-bottom: 1px solid var(--border); background: var(--surface2); text-align: center; }
 .auth-logo {
-  width: 44px; height: 44px; margin: 0 auto 12px;
+  width: 120px; height: 120px; margin: 0 auto 12px;
   display: flex; align-items: center; justify-content: center;
+  overflow: visible;
 }
-.auth-logo svg { width: 44px; height: 44px; }
+.auth-logo svg { width: 120px; height: 120px; }
+.auth-logo img { width: 120px; height: 120px; border-radius: 16px; object-fit: contain; }
 .auth-brand { font-family: var(--fd); font-size: 19px; font-weight: 700; color: var(--txt); margin-bottom: 3px; }
 .auth-tagline { font-size: 12px; color: var(--txt3); }
 

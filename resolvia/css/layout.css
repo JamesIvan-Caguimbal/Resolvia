@@ -21,11 +21,12 @@
 
 .brand { display: flex; align-items: center; gap: 9px; text-decoration: none; }
 .brand-logo {
-  width: 30px; height: 30px;
+  width: 36px; height: 36px;
   display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
+  flex-shrink: 0; overflow: visible;
 }
-.brand-logo svg { width: 30px; height: 30px; }
+.brand-logo svg { width: 36px; height: 36px; }
+.brand-logo img { width: 36px; height: 36px; border-radius: 8px; object-fit: contain; }
 .brand-name { font-family: var(--fd); font-size: 15px; font-weight: 700; color: var(--txt); }
 .brand-tagline { font-size: 10px; color: var(--txt3); margin-top: 1px; }
 
@@ -104,11 +105,12 @@
   margin-bottom: 8px;
 }
 .sb-logo {
-  width: 26px; height: 26px;
+  width: 36px; height: 36px;
   display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
+  flex-shrink: 0; overflow: visible;
 }
-.sb-logo svg { width: 26px; height: 26px; }
+.sb-logo svg { width: 36px; height: 36px; }
+.sb-logo img { width: 36px; height: 36px; border-radius: 8px; object-fit: contain; }
 .sb-name { font-family: var(--fd); font-size: 13px; font-weight: 700; color: var(--txt); }
 .sb-tag { font-size: 10px; color: var(--txt3); }
 

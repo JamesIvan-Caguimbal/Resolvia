@@ -1215,6 +1215,17 @@ def serve_html(filename):
 def serve_css(filename):
     return send_from_directory("../css", filename)
 
+@app.route("/<path:filename>")
+def serve_static_file(filename):
+    """Serve any static file (images, etc.) from the resolvia root folder."""
+    import os
+    allowed_exts = {'.jpg', '.jpeg', '.png', '.gif', '.svg', '.ico', '.webp'}
+    ext = os.path.splitext(filename)[1].lower()
+    if ext in allowed_exts:
+        return send_from_directory("..", filename)
+    from flask import abort
+    abort(404)
+
 @app.route("/js/<path:filename>")
 def serve_js(filename):
     from flask import make_response

@@ -41,13 +41,10 @@
   <div class="auth-card">
     <div class="auth-header">
       <div class="auth-logo">
-        <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="32" height="32" rx="8" fill="#3758c8"/><path d="M9 8h8.5c2 0 3.5.5 4.5 1.5S23 12 23 13.5c0 1.2-.35 2.2-1.05 3-.7.8-1.7 1.3-3 1.5L23.5 24H20l-4-5.5H12V24H9V8zm3 2.5v6H17c1.1 0 2-.3 2.6-.85.6-.55.9-1.3.9-2.15 0-.9-.3-1.6-.9-2.15C19 10.8 18.1 10.5 17 10.5H12z" fill="white"/></svg>
+        <img src="resolvia_logo.jpg" alt="Resolvia" style="width:120px;height:120px;border-radius:16px;object-fit:contain;display:block;margin:0 auto;background:#f0f4ff">
       </div>
-      <div class="auth-brand">Resolvia Staff</div>
-      <div class="auth-tagline">Staff Portal — Sign in to manage your tickets</div>
-      <div class="auth-role-tabs" style="margin-top:14px">
-        <div class="auth-role-tab active">👤 Staff Login</div>
-      </div>
+      <div class="auth-brand">Resolvia</div>
+      <div class="auth-tagline">Staff Portal · Continue</div>
     </div>
 
     <div class="auth-body">
@@ -60,19 +57,14 @@
         <label class="auth-fl">Password</label>
         <div class="auth-input-wrap">
           <input id="login-pw" class="auth-input" type="password" placeholder="Enter your password"
-            oninput="updateStrengthUI(this.value,'spw-bar','spw-lbl','spw-hint')"
             onkeydown="authEnter(event, staffLogin)">
           <button class="auth-eye" id="login-eye" onclick="togglePwVisibility('login-pw','login-eye')" type="button">
             <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
           </button>
         </div>
-        <div class="pw-strength-wrap">
-          <div class="pw-strength-bar" id="spw-bar"><div class="pw-seg"></div><div class="pw-seg"></div><div class="pw-seg"></div><div class="pw-seg"></div></div>
-          <div style="display:flex;justify-content:space-between"><span class="pw-label" id="spw-lbl"></span><span class="pw-hint" id="spw-hint"></span></div>
-        </div>
       </div>
       <label class="auth-remember"><input type="checkbox"> Keep me signed in</label>
-      <button class="auth-btn" onclick="staffLogin()">Sign In as Staff →</button>
+      <button class="auth-btn" onclick="staffLogin()">Staff →</button>
     </div>
 
     <div class="auth-footer"></div>
@@ -103,7 +95,7 @@
 <header class="topbar">
   <a class="brand" href="staff.html">
     <div class="brand-logo">
-      <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="32" height="32" rx="8" fill="#3758c8"/><path d="M9 8h8.5c2 0 3.5.5 4.5 1.5S23 12 23 13.5c0 1.2-.35 2.2-1.05 3-.7.8-1.7 1.3-3 1.5L23.5 24H20l-4-5.5H12V24H9V8zm3 2.5v6H17c1.1 0 2-.3 2.6-.85.6-.55.9-1.3.9-2.15 0-.9-.3-1.6-.9-2.15C19 10.8 18.1 10.5 17 10.5H12z" fill="white"/></svg>
+      <img src="resolvia_logo.jpg" alt="Resolvia" style="width:36px;height:36px;border-radius:8px;object-fit:contain;display:block;background:#f0f4ff">
     </div>
     <div>
       <div class="brand-name">Resolvia <span style="font-size:11px;font-weight:500;color:var(--txt3)">Staff</span></div>
@@ -139,7 +131,7 @@
 <nav class="sidebar">
   <div class="sidebar-brand">
     <div class="sb-logo">
-      <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="32" height="32" rx="8" fill="#3758c8"/><path d="M9 8h8.5c2 0 3.5.5 4.5 1.5S23 12 23 13.5c0 1.2-.35 2.2-1.05 3-.7.8-1.7 1.3-3 1.5L23.5 24H20l-4-5.5H12V24H9V8zm3 2.5v6H17c1.1 0 2-.3 2.6-.85.6-.55.9-1.3.9-2.15 0-.9-.3-1.6-.9-2.15C19 10.8 18.1 10.5 17 10.5H12z" fill="white"/></svg>
+      <img src="resolvia_logo.jpg" alt="Resolvia" style="width:36px;height:36px;border-radius:8px;object-fit:contain;display:block;background:#f0f4ff">
     </div>
     <div><div class="sb-name">Resolvia</div><div class="sb-tag">Take Action. Resolve Fast.</div></div>
   </div>
